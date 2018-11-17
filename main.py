@@ -51,6 +51,9 @@ class MainWidget(BaseWidget) :
 
         # The display for the gems, now bar, and bar lines
         self.canvas.add(Color(1,1,1))
+        rect = Rectangle(pos=(0,0), size=(Window.width, Window.height))
+        
+        self.canvas.add(rect)
         self.lane_manager = LaneManager()
         self.canvas.add(self.lane_manager)
 
@@ -78,9 +81,10 @@ class MainWidget(BaseWidget) :
         pass
 
     def on_key_up(self, keycode):
-        # button up
-        # only play game if the game is not paused
-        pass
+        button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
+        if button_idx != None:
+            self.enemy_manager.kill_lane(button_idx)
+
 
     def on_update(self) :
         self.lane_manager.on_update()
@@ -107,7 +111,7 @@ class Lane(InstructionGroup):
         self.idx = idx
         hue = np.interp(self.get_lane_position(idx), (0,Window.height), (0, 1))
         c = Color(hsv=(hue,1,1))
-        c.a = 0.5
+        c.a = 0.3
         self.add(c)
         rect = Rectangle(pos=(0, self.get_lane_position(idx)), size=(Window.width, Window.height/8))
         self.add(rect)
@@ -129,13 +133,18 @@ class EnemyManager(InstructionGroup):
         self.add(enemy)
         self.enemies.append(enemy)
 
+    def kill_lane(self,idx):
+        for enemy in self.enemies:
+            if(enemy.lane == idx):
+                enemy.on_damage(100)
+
     def on_update(self):
         dead = []
         for enemy in self.enemies:
             if(enemy.speed == 0): 
                 dead.append(enemy)
             else:
-                enemy.on_update()
+                enemy.on_update(0.1)
         for dead_enemy in dead:
             self.enemies.remove(dead_enemy)
 
@@ -144,28 +153,44 @@ class Enemy(InstructionGroup):
         super(Enemy, self).__init__()
         self.hp = 100
         self.state = "idle"
-        self.lane = 0
+        self.lane = idx
         self.r = Window.height/16
+        self.color = Color(0.8,0,0,0.8)
+        self.add(self.color)
         segments = 40
         pos = self.get_enemy_pos_from_lane(idx)
         self.circle = CEllipse(cpos = pos, csize = (2*self.r, 2*self.r), segments = segments) 
+        self.size_anim = None
+        self.color_anim = None
+
         self.add(self.circle)
         self.speed = 2
+        self.time = 0
 
     def get_enemy_pos_from_lane(self,idx):
         return (Window.width * 0.9, idx * Window.height/8 + self.r)
 
-    def on_update(self):
+    def on_update(self, dt):
         cur_pos = self.circle.pos
         self.circle.pos = (cur_pos[0] - self.speed, cur_pos[1])
+        if(self.size_anim is not None):
+            size = self.size_anim.eval(self.time)
+            color = self.color_anim.eval(self.time)
+            
+            self.color.a = color
+            self.circle.csize = (size,size)
+            self.time += dt 
+            if(self.size_anim.is_active(self.time) is False):
+                self.speed = 0
         
     def on_damage(self, damage):
         self.hp -= damage
-        if(damage <= 0):
+        if(self.hp <= 0):
             self.on_kill()
 
     def on_kill(self):
-        self.speed = 0
+        self.size_anim = KFAnim((0,2*self.r),(.8,5*self.r))
+        self.color_anim = KFAnim((0,0.8),(.3,1), (.5,0))
         # play death animation
     
 class Hero(InstructionGroup):
@@ -180,6 +205,8 @@ class Hero(InstructionGroup):
         self.color_anim = None
         self.time = 0 
         # Create the shape itself 
+        self.color = Color(1,1,1)
+        self.add(self.color)
         self.circle = CEllipse(cpos = pos, csize = (2*self.r, 2*self.r), segments = segments) 
         self.add(self.circle)
     def change_lane(self,lane):
