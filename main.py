@@ -24,13 +24,13 @@ import random
 import numpy as np
 import bisect
 
-def score_label() :
-    l = Label(text = "Score: 0", halign = 'right',valign='top', font_size='20sp',
+def hp_label() :
+    l = Label(text = "HP: 0", halign = 'right',valign='top', font_size='20sp',
               pos=(Window.width/2.5, Window.height * 0.43),
               text_size=(Window.width, Window.height))
     return l
-def hp_label() :
-    l = Label(text = "HP: 0", halign = 'left',valign='top', font_size='20sp',
+def score_label() :
+    l = Label(text = "Score: 0", halign = 'left',valign='top', font_size='20sp',
               pos=(Window.width/2, Window.height * 0.43),
               text_size=(Window.width, Window.height))
     return l
