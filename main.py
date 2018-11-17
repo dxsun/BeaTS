@@ -84,6 +84,7 @@ class MainWidget(BaseWidget) :
         button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
         if button_idx != None:
             self.enemy_manager.kill_lane(button_idx)
+            self.player.change_lane(button_idx)
 
 
     def on_update(self) :
@@ -230,6 +231,10 @@ class Player(InstructionGroup):
         self.hero = Hero((0,0))
         self.hero.change_lane(1)
         self.add(self.hero) 
+
+    def change_lane(self,lane):
+        self.hero.change_lane(lane)
+
     # needed to check if for pass gems (ie, went past the slop window)
     def on_update(self):
         self.score_label.text = "Score: " + str(self.score)
