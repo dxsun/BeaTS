@@ -68,10 +68,10 @@ class MainWidget(BaseWidget) :
         self.player = Player(self.hp_label,self.score_label)
         self.canvas.add(self.player)
 
-        self.enemy_manager = EnemyManager()
-        enemy = Enemy(5)
+        self.enemy_manager = EnemyManager() 
         self.canvas.add(self.enemy_manager)
-        self.enemy_manager.add_enemy(enemy)
+        self.enemy_manager.spawn_enemy(5)
+        self.enemy_manager.spawn_enemy(2)
 
     def on_key_down(self, keycode, modifiers):
         # play / pause toggle
@@ -85,6 +85,7 @@ class MainWidget(BaseWidget) :
     def on_update(self) :
         self.lane_manager.on_update()
         self.player.on_update()
+        self.enemy_manager.on_update()
 
 class LaneManager(InstructionGroup):
     def __init__(self):
@@ -122,18 +123,26 @@ class EnemyManager(InstructionGroup):
         super(EnemyManager, self).__init__()
         self.enemies = []
 
-    def add_enemy(self, enemy):
+
+    def spawn_enemy(self,idx):
+        enemy = Enemy(idx)
         self.add(enemy)
         self.enemies.append(enemy)
 
     def on_update(self):
+        dead = []
         for enemy in self.enemies:
-            enemy.on_update()
+            if(enemy.speed == 0): 
+                dead.append(enemy)
+            else:
+                enemy.on_update()
+        for dead_enemy in dead:
+            self.enemies.remove(dead_enemy)
 
 class Enemy(InstructionGroup):
     def __init__(self, idx):
         super(Enemy, self).__init__()
-        self.hp = 0
+        self.hp = 100
         self.state = "idle"
         self.lane = 0
         self.r = Window.height/16
@@ -141,12 +150,23 @@ class Enemy(InstructionGroup):
         pos = self.get_enemy_pos_from_lane(idx)
         self.circle = CEllipse(cpos = pos, csize = (2*self.r, 2*self.r), segments = segments) 
         self.add(self.circle)
+        self.speed = 2
 
     def get_enemy_pos_from_lane(self,idx):
         return (Window.width * 0.9, idx * Window.height/8 + self.r)
 
     def on_update(self):
-        pass
+        cur_pos = self.circle.pos
+        self.circle.pos = (cur_pos[0] - self.speed, cur_pos[1])
+        
+    def on_damage(self, damage):
+        self.hp -= damage
+        if(damage <= 0):
+            self.on_kill()
+
+    def on_kill(self):
+        self.speed = 0
+        # play death animation
     
 class Hero(InstructionGroup):
     def __init__(self, pos):
@@ -173,8 +193,9 @@ class Hero(InstructionGroup):
 class Player(InstructionGroup):
     def __init__(self, score_label, hp_label):
         super(Player, self).__init__()
+        self.MAX_HEALTH = 100
         self.score = 0
-        self.hp = 0
+        self.hp = self.MAX_HEALTH
         self.state = "idle"
         self.lane = 0
         self.score_label = score_label
@@ -186,6 +207,17 @@ class Player(InstructionGroup):
     def on_update(self):
         self.score_label.text = "Score: " + str(self.score)
         self.hp_label.text = "HP: " + str(self.hp)
+
+    def update_health(self,amt):
+        self.hp = amt
+        if(self.hp > self.MAX_HEALTH):
+            self.hp = self.MAX_HEALTH
+        if(self.hp <= 0):
+            self.hp = 0
+            self.on_kill()
+
+    def on_kill(self):
+        pass 
         
 
 run(MainWidget)
