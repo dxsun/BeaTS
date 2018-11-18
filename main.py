@@ -175,6 +175,7 @@ class Lane(InstructionGroup):
     # needed to check if for pass gems (ie, went past the slop window)
     def on_update(self):
         pass
+
 class EnemyManager(InstructionGroup):
     def __init__(self):
         super(EnemyManager, self).__init__()
@@ -268,6 +269,7 @@ class Hero(InstructionGroup):
     # needed to check if for pass gems (ie, went past the slop window)
     def on_update(self):
         pass
+        
 # Handles game logic and keeps score.
 # Controls the display and the audio
 class Player(InstructionGroup):
