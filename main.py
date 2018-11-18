@@ -1,6 +1,6 @@
-
-
 import sys
+import rtmidi_python as rtmidi
+
 sys.path.append('..')
 
 from common.core import *
@@ -38,12 +38,16 @@ def score_label() :
 class MainWidget(BaseWidget) :
     def __init__(self):
         super(MainWidget, self).__init__()
-        
-          # Create the animations and graphics for this pset 
+
+        self.midi_in = rtmidi.MidiIn(b'in')
+        self.midi_in.open_port(0)
+
+        self.notes_down = [] # an array that keeps track of all notes that are currently being played on midi keyboard
+
         self.objects = AnimGroup()
         self.canvas.add(self.objects)
 
-        # The particle effect 
+        # The particle effect
         self.ps = ParticleSystem('particle/particle.pex')
         self.ps.emitter_x = Window.width/10
         self.ps.emitter_y = Window.height/5
@@ -52,7 +56,7 @@ class MainWidget(BaseWidget) :
         # The display for the gems, now bar, and bar lines
         self.canvas.add(Color(1,1,1))
         rect = Rectangle(pos=(0,0), size=(Window.width, Window.height))
-        
+
         self.canvas.add(rect)
         self.lane_manager = LaneManager()
         self.canvas.add(self.lane_manager)
@@ -66,12 +70,12 @@ class MainWidget(BaseWidget) :
         self.add_widget(self.score_label)
         self.hp_label = hp_label()
         self.add_widget(self.hp_label)
-        
-        # Create the player object which will store and control the state of the game 
+
+        # Create the player object which will store and control the state of the game
         self.player = Player(self.hp_label,self.score_label)
         self.canvas.add(self.player)
 
-        self.enemy_manager = EnemyManager() 
+        self.enemy_manager = EnemyManager()
         self.canvas.add(self.enemy_manager)
         self.enemy_manager.spawn_enemy(5)
         self.enemy_manager.spawn_enemy(2)
@@ -86,11 +90,20 @@ class MainWidget(BaseWidget) :
             self.enemy_manager.kill_lane(button_idx)
             self.player.change_lane(button_idx)
 
-
     def on_update(self) :
         self.lane_manager.on_update()
         self.player.on_update()
         self.enemy_manager.on_update()
+
+        message, delta_time = self.midi_in.get_message()
+        if (message):
+            if (message[0] == 144): # keydown message, add note to notes_down
+                if (message[1] not in self.notes_down):
+                    self.notes_down.append(message[1])
+            else: #keyup, remove note from notes_down
+                self.notes_down.remove(message[1])
+
+        # self.notes_down contains the notes that are currently being played
 
 class LaneManager(InstructionGroup):
     def __init__(self):
@@ -100,7 +113,7 @@ class LaneManager(InstructionGroup):
             lane = Lane(i)
             self.add(lane)
             self.lanes.append(lane)
-    
+
     # needed to check if for pass gems (ie, went past the slop window)
     def on_update(self):
         for lane in self.lanes:
@@ -116,7 +129,7 @@ class Lane(InstructionGroup):
         self.add(c)
         rect = Rectangle(pos=(0, self.get_lane_position(idx)), size=(Window.width, Window.height/8))
         self.add(rect)
-    # return the location of the lane x position 
+    # return the location of the lane x position
     def get_lane_position(self,lane):
         return lane * Window.height/8
 
@@ -142,7 +155,7 @@ class EnemyManager(InstructionGroup):
     def on_update(self):
         dead = []
         for enemy in self.enemies:
-            if(enemy.speed == 0): 
+            if(enemy.speed == 0):
                 dead.append(enemy)
             else:
                 enemy.on_update(0.1)
@@ -160,7 +173,7 @@ class Enemy(InstructionGroup):
         self.add(self.color)
         segments = 40
         pos = self.get_enemy_pos_from_lane(idx)
-        self.circle = CEllipse(cpos = pos, csize = (2*self.r, 2*self.r), segments = segments) 
+        self.circle = CEllipse(cpos = pos, csize = (2*self.r, 2*self.r), segments = segments)
         self.size_anim = None
         self.color_anim = None
 
@@ -177,13 +190,13 @@ class Enemy(InstructionGroup):
         if(self.size_anim is not None):
             size = self.size_anim.eval(self.time)
             color = self.color_anim.eval(self.time)
-            
+
             self.color.a = color
             self.circle.csize = (size,size)
-            self.time += dt 
+            self.time += dt
             if(self.size_anim.is_active(self.time) is False):
                 self.speed = 0
-        
+
     def on_damage(self, damage):
         self.hp -= damage
         if(self.hp <= 0):
@@ -193,26 +206,26 @@ class Enemy(InstructionGroup):
         self.size_anim = KFAnim((0,2*self.r),(.8,5*self.r))
         self.color_anim = KFAnim((0,0.8),(.3,1), (.5,0))
         # play death animation
-    
+
 class Hero(InstructionGroup):
     def __init__(self, pos):
         super(Hero, self).__init__()
-        self.origin = pos 
+        self.origin = pos
         self.r = Window.height/16
         segments = 40
 
-        #animations on the gems 
+        #animations on the gems
         self.size_anim = None
         self.color_anim = None
-        self.time = 0 
-        # Create the shape itself 
+        self.time = 0
+        # Create the shape itself
         self.color = Color(1,1,1)
         self.add(self.color)
-        self.circle = CEllipse(cpos = pos, csize = (2*self.r, 2*self.r), segments = segments) 
+        self.circle = CEllipse(cpos = pos, csize = (2*self.r, 2*self.r), segments = segments)
         self.add(self.circle)
     def change_lane(self,lane):
         self.circle.pos = (Window.width/10,(lane * Window.height/8))
-   
+
     # needed to check if for pass gems (ie, went past the slop window)
     def on_update(self):
         pass
@@ -230,7 +243,7 @@ class Player(InstructionGroup):
         self.hp_label = hp_label
         self.hero = Hero((0,0))
         self.hero.change_lane(1)
-        self.add(self.hero) 
+        self.add(self.hero)
 
     def change_lane(self,lane):
         self.hero.change_lane(lane)
@@ -249,7 +262,7 @@ class Player(InstructionGroup):
             self.on_kill()
 
     def on_kill(self):
-        pass 
-        
+        pass
+
 
 run(MainWidget)
