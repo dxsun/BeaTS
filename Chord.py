@@ -19,29 +19,50 @@ Important attriutes:
 	self.notes - access the actual semitones of the notes in the chord
 
 """
-
-semitone_mapping = {
-	"C": 60,
-	"D": 62,
-	"E": 64,
-	"F": 65,
-	"G": 67,
-	"A": 69,
-	"B": 71,
-}
-
-interval_values = {
-	"1": 0,
-	"2": 2,
-	"3": 4,
-	"4": 5,
-	"5": 7,
-	"6": 9,
-	"7": 11,
-	"8": 12
-}
-
 class Chord():
+
+	# Maps the key to the absolute MIDI semitone value
+	semitone_mapping = {
+		"C": 60,
+		"D": 62,
+		"E": 64,
+		"F": 65,
+		"G": 67,
+		"A": 69,
+		"B": 71,
+	}	
+
+	# Maps the interval (e.g. the Major 3 interval) to the amount of half steps (semitones)
+	# requires to reach that interval from the root
+	interval_to_semitones = {
+		"1": 0,
+		"2": 2,
+		"3": 4,
+		"4": 5,
+		"5": 7,
+		"6": 9,
+		"7": 11,
+		"8": 12
+	}
+
+	# Maps the amount of half steps to interval size
+	semitones_to_interval = {value: key for key, value in interval_to_semitones.items()}
+
+	complicated_semitones_to_interval = {
+		0: "M1",
+		1: "m2",
+		2: "M2",
+		3: "m3",
+		4: "M3",
+		5: "P4",
+		6: "D5",
+		7: "P5",
+		8: "m6",
+		9: "M6",
+		10: "m7",
+		11: "M7",
+		12: "P8"
+	}
 
 	"""
 	Valid inputs for each field:
@@ -68,9 +89,9 @@ class Chord():
 			root_note -= '1'
 
 		if '8' in root:
-			root_note += interval_values['8']
+			root_note += interval_to_semitones['8']
 
-		self.notes = [root_note + interval_values[value] for value in chord]
+		self.notes = [root_note + interval_to_semitones[value] for value in chord]
 
 		# Changes note values based on chord type
 		if len(chord) == 3:
