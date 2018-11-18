@@ -12,7 +12,6 @@ from common.note import *
 from common.gfxutil import *
 import time
 
-
 from kivy.core.text import Label as CoreLabel
 from common.kivyparticle import ParticleSystem
 from kivy.graphics.instructions import InstructionGroup
@@ -43,6 +42,7 @@ class MainWidget(BaseWidget) :
         self.midi_in.open_port(0)
 
         self.notes_down = [] # an array that keeps track of all notes that are currently being played on midi keyboard
+
 
         self.objects = AnimGroup()
         self.canvas.add(self.objects)
@@ -102,8 +102,47 @@ class MainWidget(BaseWidget) :
                     self.notes_down.append(message[1])
             else: #keyup, remove note from notes_down
                 self.notes_down.remove(message[1])
-
         # self.notes_down contains the notes that are currently being played
+            print(self.notes_down)
+            
+        for key in chord_dict:
+            value = chord_dict[key]
+            if (is_chord(self.notes_down, value)):
+                lane_number = chord_to_lane[key]
+                self.enemy_manager.kill_lane(lane_number)
+                self.player.change_lane(lane_number)
+
+        # for chord_key in chord_dict:
+        #     if (is_chord(self.notes_down, chord)):
+        #         print(chord)
+
+chord_dict = {
+    'c_low' : [48, 52, 55],
+    'd_low' : [50, 53, 57],
+    'e_low' : [55, 59, 52],
+    'f_low' : [53, 60, 57],
+    'g_low' : [59, 62, 55],
+    'a_low' : [60, 64, 57],
+    'b_low' : [62, 65, 59],
+    'c_high' : [64, 67, 60]
+}
+
+chord_to_lane = {
+    'c_low' : 0,
+    'd_low' : 1,
+    'e_low' : 2,
+    'f_low' : 3,
+    'g_low' : 4,
+    'a_low' : 5,
+    'b_low' : 6,
+    'c_high' : 7
+}
+
+def is_chord(array_of_notes_down, notes_desired):
+    sorted_notes_down = sorted(array_of_notes_down)
+    sorted_notes_desired = sorted(notes_desired)
+
+    return sorted_notes_down == sorted_notes_desired
 
 class LaneManager(InstructionGroup):
     def __init__(self):
