@@ -38,8 +38,15 @@ class MainWidget(BaseWidget) :
     def __init__(self):
         super(MainWidget, self).__init__()
 
-        self.midi_in = rtmidi.MidiIn(b'in')
-        self.midi_in.open_port(0)
+        self.MIDI_ENABLED = True 
+
+        self.audio = Audio(1)# one channel
+        self.gen = Mixer()
+        self.audio.set_generator(self.gen)
+
+        if(self.MIDI_ENABLED is True):
+            self.midi_in = rtmidi.MidiIn(b'in')
+            self.midi_in.open_port(0)
 
         self.notes_down = [] # an array that keeps track of all notes that are currently being played on midi keyboard
 
@@ -80,6 +87,10 @@ class MainWidget(BaseWidget) :
         self.enemy_manager.spawn_enemy(5)
         self.enemy_manager.spawn_enemy(2)
 
+    def generate_note(self, note, duration):
+        note = NoteGenerator(note,0.5,duration)
+        self.gen.add(note)
+        self.audio.set_generator(self.gen)
     def on_key_down(self, keycode, modifiers):
         # play / pause toggle
         pass
@@ -89,21 +100,26 @@ class MainWidget(BaseWidget) :
         if button_idx != None:
             self.enemy_manager.kill_lane(button_idx)
             self.player.change_lane(button_idx)
+            self.generate_note(60+button_idx,1)
 
     def on_update(self) :
         self.lane_manager.on_update()
         self.player.on_update()
         self.enemy_manager.on_update()
+        self.audio.on_update()
 
-        message, delta_time = self.midi_in.get_message()
-        if (message):
-            if (message[0] == 144): # keydown message, add note to notes_down
-                if (message[1] not in self.notes_down):
-                    self.notes_down.append(message[1])
-            else: #keyup, remove note from notes_down
-                self.notes_down.remove(message[1])
-        # self.notes_down contains the notes that are currently being played
-            print(self.notes_down)
+        if(self.MIDI_ENABLED is True):
+            message, delta_time = self.midi_in.get_message()
+            if (message):
+                if (message[0] == 144): # keydown message, add note to notes_down
+                    if (message[1] not in self.notes_down):
+                        self.notes_down.append(message[1])
+                else: #keyup, remove note from notes_down
+                    self.notes_down.remove(message[1])
+            # self.notes_down contains the notes that are currently being played
+                print(self.notes_down)
+                for note in self.notes_down:
+                    self.generate_note(note,1)
             
         for key in chord_dict:
             value = chord_dict[key]
