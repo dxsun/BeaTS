@@ -10,6 +10,8 @@ from common.wavegen import *
 from common.wavesrc import *
 from common.note import *
 from common.gfxutil import *
+
+from common.synth import *
 import time
 
 from kivy.core.text import Label as CoreLabel
@@ -38,11 +40,14 @@ class MainWidget(BaseWidget) :
     def __init__(self):
         super(MainWidget, self).__init__()
 
-        self.MIDI_ENABLED = True 
+        self.MIDI_ENABLED = False 
 
-        self.audio = Audio(1)# one channel
-        self.gen = Mixer()
-        self.audio.set_generator(self.gen)
+        self.audio = Audio(2)
+        self.synth = Synth("data/FluidR3_GM.sf2")
+        self.audio.set_generator(self.synth)
+
+        self.channel = 1
+        self.synth.program(self.channel, 0, 0)
 
         if(self.MIDI_ENABLED is True):
             self.midi_in = rtmidi.MidiIn(b'in')
@@ -87,26 +92,29 @@ class MainWidget(BaseWidget) :
         self.enemy_manager.spawn_enemy(5)
         self.enemy_manager.spawn_enemy(2)
 
-    def generate_note(self, note, duration):
-        note = NoteGenerator(note,0.5,duration)
-        self.gen.add(note)
-        self.audio.set_generator(self.gen)
+
+    def generate_note(self, note):
+        self.synth.noteon(self.channel, note, 60)
+                
     def on_key_down(self, keycode, modifiers):
         # play / pause toggle
-        pass
+        button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
+        if button_idx != None:
+            self.generate_note(60+button_idx)
 
     def on_key_up(self, keycode):
         button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
         if button_idx != None:
             self.enemy_manager.kill_lane(button_idx)
             self.player.change_lane(button_idx)
-            self.generate_note(60+button_idx,1)
+            self.synth.noteoff(self.channel, 60+button_idx)
 
     def on_update(self) :
         self.lane_manager.on_update()
         self.player.on_update()
         self.enemy_manager.on_update()
         self.audio.on_update()
+
 
         if(self.MIDI_ENABLED is True):
             message, delta_time = self.midi_in.get_message()
@@ -115,11 +123,13 @@ class MainWidget(BaseWidget) :
                     if (message[1] not in self.notes_down):
                         self.notes_down.append(message[1])
                 else: #keyup, remove note from notes_down
+                    self.synth.noteoff(self.channel, message[1])# stop playing the note if the key is up
                     self.notes_down.remove(message[1])
             # self.notes_down contains the notes that are currently being played
                 print(self.notes_down)
+
                 for note in self.notes_down:
-                    self.generate_note(note,1)
+                    self.generate_note(note)
             
         for key in chord_dict:
             value = chord_dict[key]
