@@ -236,7 +236,7 @@ class Enemy(InstructionGroup):
         super(Enemy, self).__init__()
         self.hp = 100
         self.state = "idle"
-        self.frames = {"idle":["idle.png","idle2.png"]}
+        self.frames = {"idle":(2,1)}
         self.frame = 0
         self.lane = idx
         self.r = Window.height/16
@@ -246,7 +246,7 @@ class Enemy(InstructionGroup):
         pos = self.get_enemy_pos_from_lane(idx)
 
         self.type = enemy_type 
-        self.rect = Rectangle(pos = pos, size = (2*self.r, 2*self.r), texture=Image("assets/" + self.type + "_"+'idle.png').texture)
+        self.rect = Rectangle(pos = pos, size = (2*self.r, 2*self.r), texture=Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture)
         if(self.type == "leader"):
             self.rect.size = (3*self.r,3*self.r)
         self.size_anim = None
@@ -259,14 +259,19 @@ class Enemy(InstructionGroup):
     def get_enemy_pos_from_lane(self,idx):
         return (Window.width * 0.9, idx * Window.height/8)
 
+    def change_state(self,state):
+        self.state = state
+        self.frame = 0
+
     def on_update(self, dt):
         cur_pos = self.rect.pos
-        if(self.time > 1):
-            print(self.type + "_"+self.frames[self.state][self.frame])
-            self.rect.texture = Image("assets/" + self.type + "_"+self.frames[self.state][self.frame]).texture
+        if(self.time > self.frames[self.state][1]):
+            self.rect.texture = Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture
             self.frame += 1 
-            if(self.frame > len(self.frames[self.state]) - 1):
+            if(self.frame > self.frames[self.state][0] - 1):
                 self.frame = 0
+                if(self.state == "attack"):
+                    self.state = "idle"
             self.time = 0
         self.rect.pos = (cur_pos[0] - self.speed, cur_pos[1])
         if(self.size_anim is not None):
@@ -297,8 +302,9 @@ class Hero(InstructionGroup):
         self.origin = pos
         self.r = Window.height/16
         segments = 40
-        self.frames = {"idle":["hero.png","hero2.png"]}
+        self.frames = {"idle":(2,1),"attack":(3,0.5)}
         self.frame = 0
+        self.type = "hero"
         self.state = "idle"
 
         #animations on the gems
@@ -309,18 +315,26 @@ class Hero(InstructionGroup):
         self.color = Color(1,1,1)
         self.time = 0
         self.add(self.color)
-        self.rect = Rectangle(pos = pos, size = (3*self.r, 3*self.r),texture=Image('assets/hero.png').texture)
+        self.rect = Rectangle(pos = pos, size = (3*self.r, 3*self.r),texture=Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture)
         self.add(self.rect)
+
+    def change_state(self,state):
+        self.state = state
+        self.frame = 0
+
     def change_lane(self,lane):
         self.rect.pos = (Window.width/10,(lane * Window.height/8))
+        self.change_state("attack")
 
     # needed to check if for pass gems (ie, went past the slop window)
     def on_update(self, dt):
-        if(self.time > 1):
-            self.rect.texture = Image("assets/" + self.frames[self.state][self.frame]).texture
+        if(self.time > self.frames[self.state][1]):
+            self.rect.texture = Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture
             self.frame += 1 
-            if(self.frame > len(self.frames[self.state]) - 1):
+            if(self.frame > self.frames[self.state][0] - 1):
                 self.frame = 0
+                if(self.state == "attack"):
+                    self.state = "idle"
             self.time = 0
         self.time += dt 
         
