@@ -42,6 +42,7 @@ class MainWidget(BaseWidget) :
     def __init__(self):
         super(MainWidget, self).__init__()
 
+
         self.MIDI_ENABLED = False 
 
         self.audio = Audio(2)
@@ -69,11 +70,11 @@ class MainWidget(BaseWidget) :
 
         # The display for the gems, now bar, and bar lines
         self.canvas.add(Color(1,1,1))
-        rect = Rectangle(pos=(0,0), size=(Window.width, Window.height))
+        rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/grassybg.png').texture)
 
         self.canvas.add(rect)
         self.lane_manager = LaneManager()
-        self.canvas.add(self.lane_manager)
+        #self.canvas.add(self.lane_manager)
 
 
         # Display the status of the game through the text labels
@@ -85,14 +86,16 @@ class MainWidget(BaseWidget) :
         self.hp_label = hp_label()
         self.add_widget(self.hp_label)
 
+        self.enemy_manager = EnemyManager()
+        self.canvas.add(self.enemy_manager)
+        self.enemy_manager.spawn_enemy(5,"leader",0)
+        self.enemy_manager.spawn_enemy(5,"minion",15)
+        self.enemy_manager.spawn_enemy(5,"minion",30)
+        self.enemy_manager.spawn_enemy(2,"minion",8)
+
         # Create the player object which will store and control the state of the game
         self.player = Player(self.hp_label,self.score_label)
         self.canvas.add(self.player)
-
-        self.enemy_manager = EnemyManager()
-        self.canvas.add(self.enemy_manager)
-        self.enemy_manager.spawn_enemy(5,"leader")
-        self.enemy_manager.spawn_enemy(2,"minion")
 
 
     def generate_note(self, note):
@@ -211,8 +214,8 @@ class EnemyManager(InstructionGroup):
         self.enemies = []
 
 
-    def spawn_enemy(self,idx,enemy_type):
-        enemy = Enemy(idx,enemy_type)
+    def spawn_enemy(self,idx,enemy_type,delay):
+        enemy = Enemy(idx,enemy_type,delay)
         self.add(enemy)
         self.enemies.append(enemy)
 
@@ -232,7 +235,7 @@ class EnemyManager(InstructionGroup):
             self.enemies.remove(dead_enemy)
 
 class Enemy(InstructionGroup):
-    def __init__(self, idx, enemy_type):
+    def __init__(self, idx, enemy_type,delay):
         super(Enemy, self).__init__()
         self.hp = 100
         self.state = "idle"
@@ -255,9 +258,11 @@ class Enemy(InstructionGroup):
         self.add(self.rect)
         self.speed = 2
         self.time = 0
+        self.delay = delay
+        self.started = False
 
     def get_enemy_pos_from_lane(self,idx):
-        return (Window.width * 0.9, idx * Window.height/8)
+        return (Window.width, idx * Window.height/8)
 
     def change_state(self,state):
         self.state = state
@@ -265,24 +270,30 @@ class Enemy(InstructionGroup):
 
     def on_update(self, dt):
         cur_pos = self.rect.pos
-        if(self.time > self.frames[self.state][1]):
-            self.rect.texture = Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture
-            self.frame += 1 
-            if(self.frame > self.frames[self.state][0] - 1):
-                self.frame = 0
-                if(self.state == "attack"):
-                    self.state = "idle"
-            self.time = 0
-        self.rect.pos = (cur_pos[0] - self.speed, cur_pos[1])
-        if(self.size_anim is not None):
-            size = self.size_anim.eval(self.time)
-            color = self.color_anim.eval(self.time)
 
-            self.color.a = color
-            self.rect.size = (size,size)
-            
-            if(self.size_anim.is_active(self.time) is False):
-                self.speed = 0
+        if(self.started is False and self.time > self.delay):
+            self.started = True
+            self.time = 0 
+        if(self.started is True):
+            if(self.time > self.frames[self.state][1]):
+                self.rect.texture = Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture
+                self.frame += 1 
+                if(self.frame > self.frames[self.state][0] - 1):
+                    self.frame = 0
+                    if(self.state == "attack"):
+                        self.state = "idle"
+                self.time = 0
+
+            self.rect.pos = (cur_pos[0] - self.speed, cur_pos[1])
+            if(self.size_anim is not None):
+                size = self.size_anim.eval(self.time)
+                color = self.color_anim.eval(self.time)
+
+                self.color.a = color
+                self.rect.size = (size,size)
+                
+                if(self.size_anim.is_active(self.time) is False):
+                    self.speed = 0
         self.time += dt
 
     def on_damage(self, damage):
