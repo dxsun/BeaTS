@@ -9,6 +9,8 @@ from common.mixer import *
 from common.wavegen import *
 from common.wavesrc import *
 from common.note import *
+
+from kivy.core.image import Image
 from common.gfxutil import *
 
 from common.synth import *
@@ -89,8 +91,8 @@ class MainWidget(BaseWidget) :
 
         self.enemy_manager = EnemyManager()
         self.canvas.add(self.enemy_manager)
-        self.enemy_manager.spawn_enemy(5)
-        self.enemy_manager.spawn_enemy(2)
+        self.enemy_manager.spawn_enemy(5,"leader")
+        self.enemy_manager.spawn_enemy(2,"minion")
 
 
     def generate_note(self, note):
@@ -188,11 +190,12 @@ class Lane(InstructionGroup):
     def __init__(self, idx):
         super(Lane, self).__init__()
         self.idx = idx
-        hue = np.interp(self.get_lane_position(idx), (0,Window.height), (0, 1))
-        c = Color(hsv=(hue,1,1))
-        c.a = 0.3
-        self.add(c)
-        rect = Rectangle(pos=(0, self.get_lane_position(idx)), size=(Window.width, Window.height/8))
+        hue = np.interp(self.get_lane_position(idx), (0,Window.height), (0, 0.5))
+        c = Color(hsv=(0,0,0))
+        c.a = 1
+        #self.add(c)
+        rect = Rectangle(pos=(0, self.get_lane_position(idx)), size=(Window.width, Window.height/8), texture=Image('assets/grass.png').texture)
+        #rect = Rectangle(pos=(0, self.get_lane_position(idx)), size=(Window.width, Window.height/8))
         self.add(rect)
     # return the location of the lane x position
     def get_lane_position(self,lane):
@@ -208,8 +211,8 @@ class EnemyManager(InstructionGroup):
         self.enemies = []
 
 
-    def spawn_enemy(self,idx):
-        enemy = Enemy(idx)
+    def spawn_enemy(self,idx,enemy_type):
+        enemy = Enemy(idx,enemy_type)
         self.add(enemy)
         self.enemies.append(enemy)
 
@@ -229,39 +232,53 @@ class EnemyManager(InstructionGroup):
             self.enemies.remove(dead_enemy)
 
 class Enemy(InstructionGroup):
-    def __init__(self, idx):
+    def __init__(self, idx, enemy_type):
         super(Enemy, self).__init__()
         self.hp = 100
         self.state = "idle"
+        self.frames = {"idle":["idle.png","idle2.png"]}
+        self.frame = 0
         self.lane = idx
         self.r = Window.height/16
-        self.color = Color(0.8,0,0,0.8)
+        self.color = Color(1,1,1)
         self.add(self.color)
         segments = 40
         pos = self.get_enemy_pos_from_lane(idx)
-        self.circle = CEllipse(cpos = pos, csize = (2*self.r, 2*self.r), segments = segments)
+
+        self.type = enemy_type 
+        self.rect = Rectangle(pos = pos, size = (2*self.r, 2*self.r), texture=Image("assets/" + self.type + "_"+'idle.png').texture)
+        if(self.type == "leader"):
+            self.rect.size = (3*self.r,3*self.r)
         self.size_anim = None
         self.color_anim = None
 
-        self.add(self.circle)
+        self.add(self.rect)
         self.speed = 2
         self.time = 0
 
     def get_enemy_pos_from_lane(self,idx):
-        return (Window.width * 0.9, idx * Window.height/8 + self.r)
+        return (Window.width * 0.9, idx * Window.height/8)
 
     def on_update(self, dt):
-        cur_pos = self.circle.pos
-        self.circle.pos = (cur_pos[0] - self.speed, cur_pos[1])
+        cur_pos = self.rect.pos
+        if(self.time > 1):
+            print(self.type + "_"+self.frames[self.state][self.frame])
+            self.rect.texture = Image("assets/" + self.type + "_"+self.frames[self.state][self.frame]).texture
+            self.frame += 1 
+            if(self.frame > len(self.frames[self.state]) - 1):
+                self.frame = 0
+            self.time = 0
+        self.rect.pos = (cur_pos[0] - self.speed, cur_pos[1])
         if(self.size_anim is not None):
             size = self.size_anim.eval(self.time)
             color = self.color_anim.eval(self.time)
 
             self.color.a = color
-            self.circle.csize = (size,size)
-            self.time += dt
+            self.rect.size = (size,size)
+            
             if(self.size_anim.is_active(self.time) is False):
                 self.speed = 0
+        self.time += dt
 
     def on_damage(self, damage):
         self.hp -= damage
@@ -271,6 +288,7 @@ class Enemy(InstructionGroup):
     def on_kill(self):
         self.size_anim = KFAnim((0,2*self.r),(.8,5*self.r))
         self.color_anim = KFAnim((0,0.8),(.3,1), (.5,0))
+        self.time = 0
         # play death animation
 
 class Hero(InstructionGroup):
@@ -279,6 +297,9 @@ class Hero(InstructionGroup):
         self.origin = pos
         self.r = Window.height/16
         segments = 40
+        self.frames = {"idle":["hero.png","hero2.png"]}
+        self.frame = 0
+        self.state = "idle"
 
         #animations on the gems
         self.size_anim = None
@@ -286,15 +307,22 @@ class Hero(InstructionGroup):
         self.time = 0
         # Create the shape itself
         self.color = Color(1,1,1)
+        self.time = 0
         self.add(self.color)
-        self.circle = CEllipse(cpos = pos, csize = (2*self.r, 2*self.r), segments = segments)
-        self.add(self.circle)
+        self.rect = Rectangle(pos = pos, size = (3*self.r, 3*self.r),texture=Image('assets/hero.png').texture)
+        self.add(self.rect)
     def change_lane(self,lane):
-        self.circle.pos = (Window.width/10,(lane * Window.height/8))
+        self.rect.pos = (Window.width/10,(lane * Window.height/8))
 
     # needed to check if for pass gems (ie, went past the slop window)
-    def on_update(self):
-        pass
+    def on_update(self, dt):
+        if(self.time > 1):
+            self.rect.texture = Image("assets/" + self.frames[self.state][self.frame]).texture
+            self.frame += 1 
+            if(self.frame > len(self.frames[self.state]) - 1):
+                self.frame = 0
+            self.time = 0
+        self.time += dt 
         
 # Handles game logic and keeps score.
 # Controls the display and the audio
@@ -319,6 +347,7 @@ class Player(InstructionGroup):
     def on_update(self):
         self.score_label.text = "Score: " + str(self.score)
         self.hp_label.text = "HP: " + str(self.hp)
+        self.hero.on_update(0.1)
 
     def update_health(self,amt):
         self.hp = amt
