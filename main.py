@@ -89,9 +89,11 @@ class MainWidget(BaseWidget) :
         self.enemy_manager = EnemyManager()
         self.canvas.add(self.enemy_manager)
         self.enemy_manager.spawn_enemy(5,"leader",0)
-        self.enemy_manager.spawn_enemy(5,"minion4",15)
-        self.enemy_manager.spawn_enemy(5,"minion1",30)
-        self.enemy_manager.spawn_enemy(2,"minion2",8)
+        self.enemy_manager.spawn_enemy(5,"minion1",15)
+        self.enemy_manager.spawn_enemy(5,"minion2",30)
+        self.enemy_manager.spawn_enemy(2,"minion3",8)
+        self.enemy_manager.spawn_enemy(1,"minion4",12)
+        self.enemy_manager.spawn_enemy(4,"minion5",18)
 
         # Create the player object which will store and control the state of the game
         self.player = Player(self.hp_label,self.score_label)
