@@ -42,22 +42,26 @@ class MainWidget(BaseWidget) :
     def __init__(self):
         super(MainWidget, self).__init__()
 
-
         self.MIDI_ENABLED = False 
 
         self.audio = Audio(2)
         self.synth = Synth("data/FluidR3_GM.sf2")
-        self.audio.set_generator(self.synth)
+        self.mixer = Mixer()
+        self.audio.set_generator(self.mixer)
+        self.mixer.add(self.synth)
 
         self.channel = 1
         self.synth.program(self.channel, 0, 0)
+
+        self.bg_wave_file_gen = WaveGenerator(WaveFile("WhenIWasYourMan.wav"))
+        self.bg_wave_file_gen.set_gain(0.5)
+        self.mixer.add(self.bg_wave_file_gen)
 
         if(self.MIDI_ENABLED is True):
             self.midi_in = rtmidi.MidiIn(b'in')
             self.midi_in.open_port(0)
 
         self.notes_down = [] # an array that keeps track of all notes that are currently being played on midi keyboard
-
 
         self.objects = AnimGroup()
         self.canvas.add(self.objects)
@@ -75,7 +79,6 @@ class MainWidget(BaseWidget) :
         self.canvas.add(rect)
         self.lane_manager = LaneManager()
         #self.canvas.add(self.lane_manager)
-
 
         # Display the status of the game through the text labels
         self.canvas.add(Color(0,0,0))
@@ -99,15 +102,42 @@ class MainWidget(BaseWidget) :
         self.player = Player(self.hp_label,self.score_label)
         self.canvas.add(self.player)
 
+        self.enemy_times = []
+        self.enemy_lanes = []
+
+        self.read_data("WIWYM_chords.txt")
+
+        self.prev_time = time.time()
+        self.elapsed_time = 0
+        self.note_index = 0
+
+        window_size = 4 # 4 seconds of notes are displayed
+        x_scale = Window.width / window_size # pixels / sec
+
+        self.enemy_manager = EnemyManager()
+        self.canvas.add(self.enemy_manager)
 
     def generate_note(self, note):
-        self.synth.noteon(self.channel, note, 60)
-                
+        self.synth.noteon(self.channel, note, 100)
+
     def on_key_down(self, keycode, modifiers):
         # play / pause toggle
         button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
         if button_idx != None:
             self.generate_note(60+button_idx)
+
+    def read_data(self, filepath):
+        file = open(filepath)
+        lines = file.readlines()
+        for line in lines:
+            line = line.rstrip()
+            splitted = line.split('\t')
+            start_time_seconds = float(splitted[0])
+            lane_number = int(splitted[1])
+            self.enemy_times.append(start_time_seconds)
+            # -1 for offset so when we annotate with
+            # c = 1, d = 2, etc.
+            self.enemy_lanes.append(lane_number - 1)
 
     def on_key_up(self, keycode):
         button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
@@ -117,6 +147,9 @@ class MainWidget(BaseWidget) :
             self.synth.noteoff(self.channel, 60+button_idx)
 
     def on_update(self) :
+        self.elapsed_time += time.time() - self.prev_time
+        self.prev_time = time.time()
+
         self.lane_manager.on_update()
         self.player.on_update()
         self.enemy_manager.on_update()
@@ -142,12 +175,15 @@ class MainWidget(BaseWidget) :
             value = chord_dict[key]
             if (is_chord(self.notes_down, value)):
                 lane_number = chord_to_lane[key]
-                self.enemy_manager.kill_lane(lane_number)
+                self.enemy_manager.kill_first_enemy_in_lane(lane_number)
                 self.player.change_lane(lane_number)
 
-        # for chord_key in chord_dict:
-        #     if (is_chord(self.notes_down, chord)):
-        #         print(chord)
+        if (self.note_index < len(self.enemy_times)):
+            next_enemy = self.enemy_times[self.note_index]
+            next_lane = self.enemy_lanes[self.note_index]
+            if self.elapsed_time > (next_enemy - 5):
+                self.enemy_manager.spawn_enemy(next_lane,"minion5",0)
+                self.note_index += 1
 
 chord_dict = {
     'c_low' : [48, 52, 55],
@@ -215,11 +251,16 @@ class EnemyManager(InstructionGroup):
         super(EnemyManager, self).__init__()
         self.enemies = []
 
-
     def spawn_enemy(self,idx,enemy_type,delay):
         enemy = Enemy(idx,enemy_type,delay)
         self.add(enemy)
         self.enemies.append(enemy)
+
+    def kill_first_enemy_in_lane(self, idx):
+        for enemy in self.enemies:
+            if(enemy.lane == idx):
+                enemy.on_damage(100)
+                return
 
     def kill_lane(self,idx):
         for enemy in self.enemies:
@@ -258,7 +299,7 @@ class Enemy(InstructionGroup):
         self.color_anim = None
 
         self.add(self.rect)
-        self.speed = 2
+        self.speed = 4
         self.time = 0
         self.delay = delay
         self.started = False
