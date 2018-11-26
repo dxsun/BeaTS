@@ -32,6 +32,7 @@ def hp_label() :
               pos=(Window.width/2.5, Window.height * 0.43),
               text_size=(Window.width, Window.height))
     return l
+
 def score_label() :
     l = Label(text = "Score: 0", halign = 'left',valign='top', font_size='20sp',
               pos=(Window.width/2, Window.height * 0.43),
@@ -42,24 +43,8 @@ class MainWidget(BaseWidget) :
     def __init__(self):
         super(MainWidget, self).__init__()
 
-        self.MIDI_ENABLED = False 
-
-        self.audio = Audio(2)
-        self.synth = Synth("data/FluidR3_GM.sf2")
-        self.mixer = Mixer()
-        self.audio.set_generator(self.mixer)
-        self.mixer.add(self.synth)
-
-        self.channel = 1
-        self.synth.program(self.channel, 0, 0)
-
-        self.bg_wave_file_gen = WaveGenerator(WaveFile("WhenIWasYourMan.wav"))
-        self.bg_wave_file_gen.set_gain(0.5)
-        self.mixer.add(self.bg_wave_file_gen)
-
-        if(self.MIDI_ENABLED is True):
-            self.midi_in = rtmidi.MidiIn(b'in')
-            self.midi_in.open_port(0)
+        self.audio_controller = AudioController()
+        self.audio_controller.toggle()
 
         self.notes_down = [] # an array that keeps track of all notes that are currently being played on midi keyboard
 
@@ -91,19 +76,16 @@ class MainWidget(BaseWidget) :
 
         self.enemy_manager = EnemyManager()
         self.canvas.add(self.enemy_manager)
-        self.enemy_manager.spawn_enemy(5,"leader",0)
-        self.enemy_manager.spawn_enemy(5,"minion1",15)
-        self.enemy_manager.spawn_enemy(5,"minion2",30)
-        self.enemy_manager.spawn_enemy(2,"minion3",8)
-        self.enemy_manager.spawn_enemy(1,"minion4",12)
-        self.enemy_manager.spawn_enemy(4,"minion5",18)
-
-        # Create the player object which will store and control the state of the game
-        self.player = Player(self.hp_label,self.score_label)
-        self.canvas.add(self.player)
+        # self.enemy_manager.spawn_enemy(5,"leader",0)
+        # self.enemy_manager.spawn_enemy(5,"minion1",15)
+        # self.enemy_manager.spawn_enemy(5,"minion2",30)
+        # self.enemy_manager.spawn_enemy(2,"minion3",8)
+        # self.enemy_manager.spawn_enemy(1,"minion4",12)
+        # self.enemy_manager.spawn_enemy(4,"minion5",18)
 
         self.enemy_times = []
         self.enemy_lanes = []
+        self.enemy_types = []
 
         self.read_data("WIWYM_chords.txt")
 
@@ -114,17 +96,27 @@ class MainWidget(BaseWidget) :
         window_size = 4 # 4 seconds of notes are displayed
         x_scale = Window.width / window_size # pixels / sec
 
+        # Create the player object which will store and control the state of the game
+        self.player = Player(self.hp_label,self.score_label, self.enemy_times, self.enemy_lanes, self.enemy_types, self.enemy_manager)
+        self.canvas.add(self.player)
+        self.player.toggle()
+
         self.enemy_manager = EnemyManager()
         self.canvas.add(self.enemy_manager)
 
     def generate_note(self, note):
-        self.synth.noteon(self.channel, note, 100)
+        self.audio_controller.generate_note(note)
 
     def on_key_down(self, keycode, modifiers):
         # play / pause toggle
-        button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
-        if button_idx != None:
-            self.generate_note(60+button_idx)
+        if keycode[1] == 'p':
+            self.audio_controller.toggle()
+            self.player.toggle()
+
+        else:
+            button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
+            if button_idx != None:
+                self.audio_controller.generate_note(60+button_idx)
 
     def read_data(self, filepath):
         file = open(filepath)
@@ -134,56 +126,55 @@ class MainWidget(BaseWidget) :
             splitted = line.split('\t')
             start_time_seconds = float(splitted[0])
             lane_number = int(splitted[1])
+            enemy_type = str(splitted[2])
+
             self.enemy_times.append(start_time_seconds)
             # -1 for offset so when we annotate with
             # c = 1, d = 2, etc.
             self.enemy_lanes.append(lane_number - 1)
+            self.enemy_types.append(enemy_type)
 
     def on_key_up(self, keycode):
         button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
         if button_idx != None:
             self.enemy_manager.kill_lane(button_idx)
             self.player.change_lane(button_idx)
-            self.synth.noteoff(self.channel, 60+button_idx)
+            self.audio_controller.note_off(60+button_idx)
 
     def on_update(self) :
+        self.audio_controller.on_update()
+
         self.elapsed_time += time.time() - self.prev_time
         self.prev_time = time.time()
 
-        self.lane_manager.on_update()
-        self.player.on_update()
-        self.enemy_manager.on_update()
-        self.audio.on_update()
-
-
-        if(self.MIDI_ENABLED is True):
-            message, delta_time = self.midi_in.get_message()
+        if(self.audio_controller.MIDI_ENABLED is True):
+            message, delta_time = self.audio_controller.midi_in.get_message()
             if (message):
                 if (message[0] == 144): # keydown message, add note to notes_down
                     if (message[1] not in self.notes_down):
                         self.notes_down.append(message[1])
+                        self.player.on_notes_played()
                 else: #keyup, remove note from notes_down
-                    self.synth.noteoff(self.channel, message[1])# stop playing the note if the key is up
-                    self.notes_down.remove(message[1])
+                    if (message[1] in self.notes_down):
+                        self.audio_controller.note_off(message[1]) # stop playing the note if the key is up
+                        self.notes_down.remove(message[1])
             # self.notes_down contains the notes that are currently being played
-                print(self.notes_down)
 
                 for note in self.notes_down:
-                    self.generate_note(note)
-            
-        for key in chord_dict:
-            value = chord_dict[key]
-            if (is_chord(self.notes_down, value)):
-                lane_number = chord_to_lane[key]
-                self.enemy_manager.kill_first_enemy_in_lane(lane_number)
-                self.player.change_lane(lane_number)
+                    self.audio_controller.generate_note(note)
 
-        if (self.note_index < len(self.enemy_times)):
-            next_enemy = self.enemy_times[self.note_index]
-            next_lane = self.enemy_lanes[self.note_index]
-            if self.elapsed_time > (next_enemy - 5):
-                self.enemy_manager.spawn_enemy(next_lane,"minion5",0)
-                self.note_index += 1
+        self.lane_manager.on_update()
+        self.player.update_notes(self.notes_down)
+        self.player.on_update()
+        self.enemy_manager.on_update()
+
+        # for key in chord_dict:
+        #     value = chord_dict[key]
+        #     if (is_chord(self.notes_down, value)):
+        #         lane_number = chord_to_lane[key]
+        #         self.enemy_manager.kill_first_enemy_in_lane(lane_number)
+        #         self.player.change_lane(lane_number)
+
 
 chord_dict = {
     'c_low' : [48, 52, 55],
@@ -206,6 +197,80 @@ chord_to_lane = {
     'b_low' : 6,
     'c_high' : 7
 }
+
+lane_to_chord = {
+    0: 'c_low',
+    1: 'd_low',
+    2: 'e_low',
+    3: 'f_low',
+    4: 'g_low',
+    5: 'a_low',
+    6: 'b_low',
+    7: 'c_high'
+}
+
+lane_to_midi = {
+    0: 60,
+    1: 62,
+    2: 64,
+    3: 65,
+    4: 67,
+    5: 69,
+    6: 71,
+    7: 72
+}
+
+# creates the Audio driver
+# creates a song and loads it with solo and bg audio tracks
+# creates snippets for audio sound fx
+class AudioController(object):
+    def __init__(self):
+        super(AudioController, self).__init__()
+
+        self.MIDI_ENABLED = True
+
+        self.audio = Audio(2)
+        self.synth = Synth("data/FluidR3_GM.sf2")
+
+        self.mixer = Mixer()
+        self.audio.set_generator(self.mixer)
+        self.mixer.add(self.synth)
+
+        self.channel = 1
+        self.synth.program(self.channel, 0, 0)
+
+        self.bg_wave_file_gen = WaveGenerator(WaveFile("WhenIWasYourMan.wav"))
+        self.bg_wave_file_gen.set_gain(0.5)
+        self.mixer.add(self.bg_wave_file_gen)
+
+        if(self.MIDI_ENABLED is True):
+            self.midi_in = rtmidi.MidiIn(b'in')
+            self.midi_in.open_port(0)
+
+    # start / stop the song
+    def toggle(self):
+        self.bg_wave_file_gen.play_toggle()
+    # # mute / unmute the solo track
+    # def set_mute(self, mute):
+    #     if (mute):
+    #         self.solo_wave_file_gen.set_gain(0)
+    #     else:
+    #         self.solo_wave_file_gen.set_gain(1)
+
+    # play a sound-fx (miss sound)
+    # def play_sfx(self):
+    #     self.miss_note_gen = WaveGenerator(WaveFile("error.wav"))
+    #     self.mixer.add(self.miss_note_gen)
+
+    def generate_note(self, note):
+        self.synth.noteon(self.channel, note, 100)
+
+    def note_off(self, note):
+        self.synth.noteoff(self.channel, note)
+
+    # needed to update audio
+    def on_update(self):
+        self.audio.on_update()
 
 def is_chord(array_of_notes_down, notes_desired):
     sorted_notes_down = sorted(array_of_notes_down)
@@ -262,6 +327,10 @@ class EnemyManager(InstructionGroup):
                 enemy.on_damage(100)
                 return
 
+    def kill_enemy_at_index(self, idx):
+        self.enemies[idx].on_damage(100)
+        return
+
     def kill_lane(self,idx):
         for enemy in self.enemies:
             if(enemy.lane == idx):
@@ -274,8 +343,8 @@ class EnemyManager(InstructionGroup):
                 dead.append(enemy)
             else:
                 enemy.on_update(0.1)
-        for dead_enemy in dead:
-            self.enemies.remove(dead_enemy)
+        # for dead_enemy in dead:
+        #     self.enemies.remove(dead_enemy)
 
 class Enemy(InstructionGroup):
     def __init__(self, idx, enemy_type,delay):
@@ -291,7 +360,7 @@ class Enemy(InstructionGroup):
         segments = 40
         pos = self.get_enemy_pos_from_lane(idx)
 
-        self.type = enemy_type 
+        self.type = enemy_type
         self.rect = Rectangle(pos = pos, size = (2*self.r, 2*self.r), texture=Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture)
         if(self.type == "leader"):
             self.rect.size = (3*self.r,3*self.r)
@@ -316,11 +385,11 @@ class Enemy(InstructionGroup):
 
         if(self.started is False and self.time > self.delay):
             self.started = True
-            self.time = 0 
+            self.time = 0
         if(self.started is True):
             if(self.time > self.frames[self.state][1]):
                 self.rect.texture = Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture
-                self.frame += 1 
+                self.frame += 1
                 if(self.frame > self.frames[self.state][0] - 1):
                     self.frame = 0
                     if(self.state == "attack"):
@@ -334,7 +403,7 @@ class Enemy(InstructionGroup):
 
                 self.color.a = color
                 self.rect.size = (size,size)
-                
+
                 if(self.size_anim.is_active(self.time) is False):
                     self.speed = 0
         self.time += dt
@@ -384,18 +453,18 @@ class Hero(InstructionGroup):
     def on_update(self, dt):
         if(self.time > self.frames[self.state][1]):
             self.rect.texture = Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture
-            self.frame += 1 
+            self.frame += 1
             if(self.frame > self.frames[self.state][0] - 1):
                 self.frame = 0
                 if(self.state == "attack"):
                     self.state = "idle"
             self.time = 0
-        self.time += dt 
-        
+        self.time += dt
+
 # Handles game logic and keeps score.
-# Controls the display and the audio
+# Controls the display
 class Player(InstructionGroup):
-    def __init__(self, score_label, hp_label):
+    def __init__(self, score_label, hp_label, gem_times, gem_lanes, enemy_types, enemy_manager):
         super(Player, self).__init__()
         self.MAX_HEALTH = 100
         self.score = 0
@@ -408,14 +477,104 @@ class Player(InstructionGroup):
         self.hero.change_lane(1)
         self.add(self.hero)
 
+        self.gem_times = gem_times
+        self.gem_lanes = gem_lanes
+        self.enemy_types = enemy_types
+
+        self.elapsed_time = 0
+        self.prev_time = time.time()
+        self.playing = True
+
+        self.enemy_manager = enemy_manager
+        self.current_enemy_index = 0
+        self.enemy_spawn_index = 0
+
+        self.notes_down = []
+
+    def update_notes(self, notes):
+        self.notes_down = notes
+
+    def on_notes_played(self):
+        # called when a chord is played by MainWidget.
+        # Checks all of the gems nearby and hits enemies in the chord lane that
+        # are close enough to the now bar. Also changes the lane of the hero.
+
+        temp_gem_index = self.current_enemy_index
+
+        # iterates through all gems that are within 0.1 of the current chord
+        while(temp_gem_index != len(self.gem_times) and self.gem_times[temp_gem_index] <= self.elapsed_time + 0.4):
+
+            enemy_lane = self.gem_lanes[temp_gem_index]
+            enemy_type = self.enemy_types[temp_gem_index]
+
+            desired_chord_name = lane_to_chord[enemy_lane]
+            chord_list = chord_dict[desired_chord_name]
+
+            hit_all_notes = True
+            for note in chord_list:
+                if note not in self.notes_down:
+                    hit_all_notes = False
+
+            if hit_all_notes:
+                # change lanes bc you played a chord
+                self.change_lane(enemy_lane)
+
+            if (enemy_type == "leader"):
+                # yay you hit all the notes in the chord, now we can kill the enemy!
+                # self.notes_down needs to contain the chord (LEFT HAND OCTAVE) in the correct lane
+                if (hit_all_notes):
+                    self.enemy_manager.kill_enemy_at_index(temp_gem_index)
+
+            else:
+                # self.notes_down needs to contain the correct note.
+                # Calculate the note by finding the lane number (RIGHT HAND OCTAVE), then adding the minion number to it
+
+                note_to_match = int(enemy_type[-1:]) + lane_to_midi[enemy_lane]
+                print(note_to_match)
+                print(self.notes_down)
+                if (note_to_match in self.notes_down):
+                    self.enemy_manager.kill_enemy_at_index(temp_gem_index)
+
+            temp_gem_index += 1
+
     def change_lane(self,lane):
         self.hero.change_lane(lane)
+
+    def toggle(self):
+        self.playing = not self.playing
 
     # needed to check if for pass gems (ie, went past the slop window)
     def on_update(self):
         self.score_label.text = "Score: " + str(self.score)
         self.hp_label.text = "HP: " + str(self.hp)
-        self.hero.on_update(0.1)
+
+        if (self.playing):
+            self.hero.on_update(0.1)
+            self.elapsed_time += time.time() - self.prev_time
+
+            # THIS PART HANDLES ENEMIES AT THE NOW BAR
+            # checks all the enemies that are beyond 0.4 seconds of the now bar
+            while (self.current_enemy_index < len(self.gem_times) and self.gem_times[self.current_enemy_index] + 0.4 < self.elapsed_time):
+                current_enemy = self.enemy_manager.enemies[self.current_enemy_index]
+
+                # this means an enemy has more than 0 HP and is past the now bar by 0.4 seconds
+                if (not current_enemy.hp <= 0):
+                    self.hp -= 10
+
+                    if (self.hp == 0):
+                        print("GAME OVER")
+
+                self.current_enemy_index += 1
+
+            # THIS PART SPAWNS ENEMIES
+            if (self.enemy_spawn_index < len(self.gem_times)):
+                next_enemy = self.gem_times[self.enemy_spawn_index]
+                next_lane = self.gem_lanes[self.enemy_spawn_index]
+                if self.elapsed_time > (next_enemy - 5):
+                    self.enemy_manager.spawn_enemy(next_lane,self.enemy_types[self.enemy_spawn_index],0)
+                    self.enemy_spawn_index += 1
+            self.enemy_manager.on_update()
+        self.prev_time = time.time()
 
     def update_health(self,amt):
         self.hp = amt
