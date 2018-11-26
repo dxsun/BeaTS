@@ -15,8 +15,11 @@ inversion (int) (default 0) - Inversions are either 0, 1, 2, where a 0 represent
 1 represents the 1st inversion (the 6/3 inversion), 2 represents the 2nd inversion (6/4).
 The 3rd inversion only exists for a 7th chord (i.e. you have 4 notes in the chord).
 
-Important attriutes:
+Important attributes:
 	self.notes - access the actual semitones of the notes in the chord
+
+EXAMPLE CHORD:
+Chord(root="C", chord="135", chord_type="Major", inversion=0)
 
 """
 class Chord():
@@ -63,6 +66,8 @@ class Chord():
 		11: "M7",
 		12: "P8"
 	}
+
+	complicated_interval_to_semitones = {value: key for key, value in complicated_semitones_to_interval.items()}
 
 	"""
 	Valid inputs for each field:

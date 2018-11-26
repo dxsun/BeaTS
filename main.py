@@ -87,7 +87,7 @@ class MainWidget(BaseWidget) :
         self.enemy_lanes = []
         self.enemy_types = []
 
-        self.read_data("WIWYM_chords.txt")
+        read_data("WIWYM_chords.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
 
         self.prev_time = time.time()
         self.elapsed_time = 0
@@ -118,21 +118,6 @@ class MainWidget(BaseWidget) :
             if button_idx != None:
                 self.audio_controller.generate_note(60+button_idx)
 
-    def read_data(self, filepath):
-        file = open(filepath)
-        lines = file.readlines()
-        for line in lines:
-            line = line.rstrip()
-            splitted = line.split('\t')
-            start_time_seconds = float(splitted[0])
-            lane_number = int(splitted[1])
-            enemy_type = str(splitted[2])
-
-            self.enemy_times.append(start_time_seconds)
-            # -1 for offset so when we annotate with
-            # c = 1, d = 2, etc.
-            self.enemy_lanes.append(lane_number - 1)
-            self.enemy_types.append(enemy_type)
 
     def on_key_up(self, keycode):
         button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
