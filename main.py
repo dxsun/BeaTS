@@ -140,14 +140,12 @@ class MainWidget(BaseWidget) :
                     if (message[1] not in self.notes_down):
                         self.notes_down.append(message[1])
                         self.player.on_notes_played()
+                        self.audio_controller.generate_note(message[1])
                 else: #keyup, remove note from notes_down
                     if (message[1] in self.notes_down):
                         self.audio_controller.note_off(message[1]) # stop playing the note if the key is up
                         self.notes_down.remove(message[1])
             # self.notes_down contains the notes that are currently being played
-
-                for note in self.notes_down:
-                    self.audio_controller.generate_note(note)
 
         self.lane_manager.on_update()
         self.player.update_notes(self.notes_down)
@@ -213,7 +211,7 @@ class AudioController(object):
     def __init__(self):
         super(AudioController, self).__init__()
 
-        self.MIDI_ENABLED = False
+        self.MIDI_ENABLED = True
 
         self.audio = Audio(2)
         self.synth = Synth("data/FluidR3_GM.sf2")
@@ -511,11 +509,8 @@ class Player(InstructionGroup):
                 if (hit_all_notes):
                     self.enemy_manager.kill_enemy_at_index(temp_gem_index)
 
-            else:
-                # self.notes_down needs to contain the correct note.
-                # Calculate the note by finding the lane number (RIGHT HAND OCTAVE), then adding the minion number to it
-
-                note_to_match = int(enemy_type[-1:]) + lane_to_midi[enemy_lane]
+            else: # This is a single note for the right hand, we need to see if it matches the correct lane
+                note_to_match = lane_to_midi[enemy_lane]
                 print(note_to_match)
                 print(self.notes_down)
                 if (note_to_match in self.notes_down):
