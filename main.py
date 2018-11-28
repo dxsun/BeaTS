@@ -508,6 +508,8 @@ class Player(InstructionGroup):
                 # self.notes_down needs to contain the chord (LEFT HAND OCTAVE) in the correct lane
                 if (hit_all_notes):
                     self.enemy_manager.kill_enemy_at_index(temp_gem_index)
+                    time_difference = self.elapsed_time - self.gem_times[temp_gem_index]
+                    self.score += int(300 * (1-time_difference*2))
 
             else: # This is a single note for the right hand, we need to see if it matches the correct lane
                 note_to_match = lane_to_midi[enemy_lane]
@@ -515,6 +517,8 @@ class Player(InstructionGroup):
                 print(self.notes_down)
                 if (note_to_match in self.notes_down):
                     self.enemy_manager.kill_enemy_at_index(temp_gem_index)
+                    time_difference = self.elapsed_time - self.gem_times[temp_gem_index]
+                    self.score += int(300 * (1-time_difference*2))
 
             temp_gem_index += 1
 
