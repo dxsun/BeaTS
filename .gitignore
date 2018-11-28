@@ -2,3 +2,5 @@
 .DS_Store
 psds/
 data/FluidR3_GM.sf2
+*pycache*
+*.sv
