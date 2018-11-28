@@ -16,6 +16,7 @@ from common.gfxutil import *
 from common.synth import *
 import time
 from read_data import read_data
+from Chord import Chord
 
 from kivy.core.text import Label as CoreLabel
 from common.kivyparticle import ParticleSystem
@@ -27,6 +28,8 @@ from kivy.clock import Clock as kivyClock
 import random
 import numpy as np
 import bisect
+
+interval_to_semitones = Chord.interval_to_semitones
 
 def hp_label() :
     l = Label(text = "HP: 0", halign = 'right',valign='top', font_size='20sp',
@@ -117,15 +120,32 @@ class MainWidget(BaseWidget) :
         else:
             button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
             if button_idx != None:
-                self.audio_controller.generate_note(60+button_idx)
+                # self.audio_controller.generate_note(lane_to_midi[button_idx])
 
+                chord = chord_dict[lane_to_chord[button_idx]]
+                print("chord: ", chord)
+
+                self.notes_down.extend(chord)
+                for note in self.notes_down:
+                    self.audio_controller.generate_note(note)
+
+                self.player.on_notes_played()
 
     def on_key_up(self, keycode):
         button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
+
         if button_idx != None:
+
+            chord = chord_dict[lane_to_chord[button_idx]]
+
+            for note in chord:
+                self.audio_controller.note_off(note) # stop playing the note if the key is up
+                self.notes_down.remove(note)
+
             self.enemy_manager.kill_lane(button_idx)
             self.player.change_lane(button_idx)
-            self.audio_controller.note_off(60+button_idx)
+            # self.audio_controller.note_off(60+button_idx)
+            self.audio_controller.note_off(lane_to_midi[button_idx])
 
     def on_update(self) :
         self.audio_controller.on_update()
