@@ -91,7 +91,9 @@ class MainWidget(BaseWidget) :
         self.enemy_lanes = []
         self.enemy_types = []
 
-        read_data("WIWYM_chords.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
+        # read_data("WIWYM_chords.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
+        # read_data('left', "songs/WIWYM_left_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
+        read_data('right', "songs/WIWYM_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
 
         self.prev_time = time.time()
         self.elapsed_time = 0
@@ -231,7 +233,7 @@ class AudioController(object):
     def __init__(self):
         super(AudioController, self).__init__()
 
-        self.MIDI_ENABLED = False
+        self.MIDI_ENABLED = True
 
         self.audio = Audio(2)
         self.synth = Synth("data/FluidR3_GM.sf2")
@@ -286,7 +288,8 @@ class LaneManager(InstructionGroup):
     def __init__(self):
         super(LaneManager, self).__init__()
         self.lanes = []
-        for i in range(8):
+        self.num_lanes = 8
+        for i in range(self.num_lanes):
             lane = Lane(i)
             self.add(lane)
             self.lanes.append(lane)
@@ -533,8 +536,8 @@ class Player(InstructionGroup):
 
             else: # This is a single note for the right hand, we need to see if it matches the correct lane
                 note_to_match = lane_to_midi[enemy_lane]
-                print(note_to_match)
-                print(self.notes_down)
+                print("note to match:",note_to_match)
+                print("notes down:",self.notes_down)
                 if (note_to_match in self.notes_down):
                     self.enemy_manager.kill_enemy_at_index(temp_gem_index)
                     time_difference = self.elapsed_time - self.gem_times[temp_gem_index]
