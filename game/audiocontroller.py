@@ -15,7 +15,7 @@ class AudioController(object):
     def __init__(self):
         super(AudioController, self).__init__()
 
-        self.MIDI_ENABLED = False
+        self.MIDI_ENABLED = True
 
         self.audio = Audio(2)
         self.synth = Synth("data/FluidR3_GM.sf2")

@@ -86,7 +86,7 @@ class MainWidget(BaseWidget) :
 
         # The display for the gems, now bar, and bar lines
         self.canvas.add(Color(1,1,1))
-        rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/grassybg.png').texture)
+        rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/bg.png').texture)
 
         self.canvas.add(rect)
         self.lane_manager = LaneManager()
@@ -101,12 +101,12 @@ class MainWidget(BaseWidget) :
         self.hp_label = hp_label()
         self.add_widget(self.hp_label)
 
-        self.enemy_manager = EnemyManager()
-        self.canvas.add(self.enemy_manager)
-
         self.enemy_times = []
         self.enemy_lanes = []
         self.enemy_types = []
+
+        self.enemy_manager = EnemyManager()
+        self.canvas.add(self.enemy_manager)
 
         read_data("song_annotations/WIWYM_left_hand.txt",
             "song_annotations/WIWYM_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
@@ -122,9 +122,7 @@ class MainWidget(BaseWidget) :
         self.player = Player(self.hp_label,self.score_label, self.enemy_times, self.enemy_lanes, self.enemy_types, self.enemy_manager)
         self.canvas.add(self.player)
         self.player.toggle()
-
-        self.enemy_manager = EnemyManager()
-        self.canvas.add(self.enemy_manager)
+        
 
     def generate_note(self, note):
         self.audio_controller.generate_note(note)

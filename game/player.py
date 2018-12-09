@@ -19,6 +19,7 @@ from game.enemy import Enemy
 from utils.mappings import chord_dict, chord_to_lane, lane_to_chord, lane_to_midi
 
 HERO_UPDATE_TIME = 0.1
+SPAWN_TIME = 2.5
 
 # Handles game logic and keeps score.
 # Controls the display
@@ -32,6 +33,8 @@ class Player(InstructionGroup):
         self.lane = 0
         self.score_label = score_label
         self.hp_label = hp_label
+        # The image asset has it so that the now bbbar is at 12.15% of the width
+        self.nowbar_x = Window.width*0.1215
         self.hero = Hero((0,0))
         self.hero.change_lane(1)
         self.add(self.hero)
@@ -130,10 +133,10 @@ class Player(InstructionGroup):
             if (self.enemy_spawn_index < len(self.gem_times)):
                 next_enemy = self.gem_times[self.enemy_spawn_index]
                 next_lane = self.gem_lanes[self.enemy_spawn_index]
-                if self.elapsed_time > (next_enemy - 5):
+                if self.elapsed_time > (next_enemy - SPAWN_TIME):
                     self.enemy_manager.spawn_enemy(next_lane,self.enemy_types[self.enemy_spawn_index],0)
                     self.enemy_spawn_index += 1
-            self.enemy_manager.on_update()
+            # self.enemy_manager.on_update()
         self.prev_time = time.time()
 
     def update_health(self,amt):

@@ -50,6 +50,7 @@ class EnemyManager(InstructionGroup):
         #     self.enemies.remove(dead_enemy)
 
 class Enemy(InstructionGroup):
+
     def __init__(self, idx, enemy_type,delay):
         super(Enemy, self).__init__()
         self.hp = 100
@@ -71,7 +72,7 @@ class Enemy(InstructionGroup):
         self.color_anim = None
 
         self.add(self.rect)
-        self.speed = Window.width/50
+        self.speed = 8
         self.time = 0
         self.delay = delay
         self.started = False
@@ -99,7 +100,7 @@ class Enemy(InstructionGroup):
                         self.state = "idle"
                 self.time = 0
 
-            self.rect.pos = (cur_pos[0] - dt*self.speed, cur_pos[1])
+            self.rect.pos = (cur_pos[0] - self.speed, cur_pos[1])
             if(self.size_anim is not None):
                 size = self.size_anim.eval(self.time)
                 color = self.color_anim.eval(self.time)
