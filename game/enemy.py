@@ -69,11 +69,11 @@ class Enemy(InstructionGroup):
         self.inverstion_start = 1
 
         self.inversion_range = ["1","3","5"]
-        self.rect = Rectangle(pos = pos, size = (self.r*1.5, self.r*1.5), texture=Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture)
-        self.add(self.rect)
+        self.image_texture = Rectangle(pos = pos, size = (self.r*1.5, self.r*1.5), texture=Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture)
+        self.add(self.image_texture)
         if(self.type == "case"):
-            self.rect.pos = (self.rect.pos[0],self.rect.pos[1]/0.98)
-            self.rect.size = (2*self.r,3*self.r)
+            self.image_texture.pos = (self.image_texture.pos[0],self.image_texture.pos[1]/0.97)
+            self.image_texture.size = (2*self.r,3*self.r)
             self.enemy_bottom = Rectangle(pos = pos, size = (self.r/ratio, self.r/ratio/1.3), texture=Image("assets/enemy_" + self.inversion_range[self.inverstion_start%len(self.inversion_range)] + "_highlight.png").texture)
             self.enemy_middle = Rectangle(pos = pos, size = (self.r/ratio, self.r/ratio/1.3), texture=Image("assets/enemy_" + self.inversion_range[(self.inverstion_start+1)%len(self.inversion_range)] + "_normal.png").texture)
             self.enemy_top = Rectangle(pos = pos, size = (self.r/ratio, self.r/ratio/1.3), texture=Image("assets/enemy_" + self.inversion_range[(self.inverstion_start+2)%len(self.inversion_range)] + "_normal.png").texture)
@@ -82,8 +82,10 @@ class Enemy(InstructionGroup):
             self.add(self.enemy_bottom)
             self.enemies = [self.enemy_bottom,self.enemy_middle,self.enemy_top]
         elif(self.type == "blue"):
-            self.rect.pos = (self.rect.pos[0],self.rect.pos[1] + self.r/1.1)
-           
+            self.image_texture.pos = (self.image_texture.pos[0],self.image_texture.pos[1] + self.r/1.1)
+        elif(self.type == "red"):
+            self.image_texture.size = (self.r*2, self.r*2)
+            self.image_texture.pos = (self.image_texture.pos[0],self.image_texture.pos[1] + self.r/2.5)
             
             
         self.size_anim = None
@@ -106,14 +108,14 @@ class Enemy(InstructionGroup):
         self.frame = 0
 
     def on_update(self, dt):
-        cur_pos = self.rect.pos
+        cur_pos = self.image_texture.pos
 
         if(self.started is False and self.time > self.delay):
             self.started = True
             self.time = 0
         if(self.started is True):
             if(self.time > self.frames[self.state][1]):
-                self.rect.texture = Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture
+                self.image_texture.texture = Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture
                 self.frame += 1
                 if(self.frame > self.frames[self.state][0] - 1):
                     self.frame = 0
@@ -121,7 +123,7 @@ class Enemy(InstructionGroup):
                         self.state = "idle"
                 self.time = 0
 
-            self.rect.pos = (cur_pos[0] - self.speed, cur_pos[1])
+            self.image_texture.pos = (cur_pos[0] - self.speed, cur_pos[1])
             if(self.type == "case"):
                 self.enemy_bottom.pos = (cur_pos[0] + self.r/1.7, cur_pos[1]+self.r/1.2)
                 self.enemy_middle.pos = (cur_pos[0] +self.r/1.7, cur_pos[1]+self.r/0.75)
@@ -131,7 +133,7 @@ class Enemy(InstructionGroup):
                 color = self.color_anim.eval(self.time)
 
                 self.color.a = color
-                self.rect.size = (size,size)
+                self.image_texture.size = (size,size)
 
                 if(self.size_anim.is_active(self.time) is False):
                     self.speed = 0
