@@ -118,7 +118,7 @@ class Player(InstructionGroup):
                 if (not current_enemy.hp <= 0):
                     self.hp -= 10
                     self.hero.change_state("hurt")
-                    current_enemy.on_kill(True) # explode the enemy on a pass
+                    current_enemy.kill_subenemies([0,1]) # explode the enemy on a pass
                     if (self.hp == 0):
                         print("GAME OVER")
 

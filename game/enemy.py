@@ -103,13 +103,13 @@ class Enemy(InstructionGroup):
         self.started = False
 
     def kill_subenemies(self,enemies_kill):
-        self.angry_anim = KFAnim((0,0.8),(.3,1), (0.8,0))
-        
-        for i in range(len(self.enemies)):
-            self.make_subenemy_angry(i)
         if(self.type == "case"):
-            for idx in enemies_kill:
-                self.enemies[idx].texture = Image("assets/enemy_" + self.inversion_range[self.inverstion_start%len(self.inversion_range)] + "_splat.png").texture
+            self.angry_anim = KFAnim((0,0.8),(.3,1), (0.8,0))
+            
+            for i in range(len(self.enemies)):
+                self.make_subenemy_angry(i)
+                for idx in enemies_kill:
+                    self.enemies[idx].texture = Image("assets/enemy_" + self.inversion_range[self.inverstion_start%len(self.inversion_range)] + "_empty.png").texture
 
     def make_subenemy_angry(self,idx):
         if(self.type == "case"):
