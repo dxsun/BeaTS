@@ -118,8 +118,8 @@ class MainWidget(BaseWidget) :
         # read_data("song_annotations/WIWYM_left_hand.txt",
         #     "song_annotations/WIWYM_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
 
-        read_data("song_annotations/hallelujah_left_hand_times.txt",
-            "song_annotations/hallelujah_right_hand_times.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
+        read_data("song_annotations/hallelujah_left_hand.txt",
+            "song_annotations/hallelujah_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
 
         self.prev_time = time.time()
         self.elapsed_time = 0
