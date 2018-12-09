@@ -93,17 +93,11 @@ class Enemy(InstructionGroup):
             
         self.size_anim = None
         self.color_anim = None
-<<<<<<< HEAD
-
         self.add(self.rect)
         self.speed = 8
-=======
         self.angry_anim = None
         
-        
-        self.speed = 4
         self.explosion_idx = 0
->>>>>>> 0757adc61a9d1d3a6aa753d511b8ed2b629f2e6d
         self.time = 0
         self.delay = delay
         self.is_pass = False

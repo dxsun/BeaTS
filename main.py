@@ -129,18 +129,6 @@ class MainWidget(BaseWidget) :
         self.player = Player(self.hp_label,self.score_label, self.enemy_times, self.enemy_lanes, self.enemy_types, self.enemy_manager)
         self.canvas.add(self.player)
         self.player.toggle()
-<<<<<<< HEAD
-        
-=======
-
-        self.enemy_manager = EnemyManager()
-        self.canvas.add(self.enemy_manager)
-        # self.enemy_manager.spawn_enemy(5,"case",0)
-        # self.enemy_manager.spawn_enemy(5,"red",15)
-        # self.enemy_manager.spawn_enemy(4,"red",15)
-        # self.enemy_manager.spawn_enemy(3,"case",10)
-        # self.enemy_manager.spawn_enemy(2,"blue",0)
->>>>>>> 0757adc61a9d1d3a6aa753d511b8ed2b629f2e6d
 
         
     def generate_note(self, note):
