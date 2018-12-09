@@ -20,7 +20,7 @@ class Hero(InstructionGroup):
         self.origin = pos
         self.r = Window.height/16
         segments = 40
-        self.frames = {"idle":(2,1),"attack":(3,0.5)}
+        self.frames = {"idle":(2,1),"attack":(3,0.5),"hurt":(4,0.2)}
         self.frame = 0
         self.type = "hero"
         self.state = "idle"
@@ -51,7 +51,7 @@ class Hero(InstructionGroup):
             self.frame += 1
             if(self.frame > self.frames[self.state][0] - 1):
                 self.frame = 0
-                if(self.state == "attack"):
+                if(self.state == "attack" or self.state == "hurt"):
                     self.state = "idle"
             self.time = 0
         self.time += dt
