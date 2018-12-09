@@ -41,7 +41,7 @@ class Hero(InstructionGroup):
         self.frame = 0
 
     def change_lane(self,lane):
-        self.rect.pos = (Window.width/10,(lane * Window.height/8))
+        self.rect.pos = (0,(lane * Window.height/8))
         self.change_state("attack")
 
     # needed to check if for pass gems (ie, went past the slop window)

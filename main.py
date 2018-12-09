@@ -86,7 +86,7 @@ class MainWidget(BaseWidget) :
 
         # The display for the gems, now bar, and bar lines
         self.canvas.add(Color(1,1,1))
-        rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/grassybg.png').texture)
+        rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/bg.png').texture)
 
         self.canvas.add(rect)
         self.lane_manager = LaneManager()
