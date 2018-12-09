@@ -17,6 +17,7 @@ from common.synth import *
 import time
 from read_data import read_data
 from Chord import Chord
+from mappings import chord_dict, chord_to_lane, lane_to_chord, lane_to_midi
 
 from kivy.core.text import Label as CoreLabel
 from common.kivyparticle import ParticleSystem
@@ -91,9 +92,7 @@ class MainWidget(BaseWidget) :
         self.enemy_lanes = []
         self.enemy_types = []
 
-        # read_data("WIWYM_chords.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
-        # read_data('left', "songs/WIWYM_left_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
-        read_data('right', "songs/WIWYM_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
+        read_data("songs/WIWYM_left_hand.txt", "songs/WIWYM_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
 
         self.prev_time = time.time()
         self.elapsed_time = 0
@@ -182,49 +181,7 @@ class MainWidget(BaseWidget) :
         #         self.player.change_lane(lane_number)
 
 
-chord_dict = {
-    'c_low' : [48, 52, 55],
-    'd_low' : [50, 53, 57],
-    'e_low' : [55, 59, 52],
-    'f_low' : [53, 60, 57],
-    'g_low' : [59, 62, 55],
-    'a_low' : [60, 64, 57],
-    'b_low' : [62, 65, 59],
-    'c_high' : [64, 67, 60]
-}
 
-chord_to_lane = {
-    'c_low' : 0,
-    'd_low' : 1,
-    'e_low' : 2,
-    'f_low' : 3,
-    'g_low' : 4,
-    'a_low' : 5,
-    'b_low' : 6,
-    'c_high' : 7
-}
-
-lane_to_chord = {
-    0: 'c_low',
-    1: 'd_low',
-    2: 'e_low',
-    3: 'f_low',
-    4: 'g_low',
-    5: 'a_low',
-    6: 'b_low',
-    7: 'c_high'
-}
-
-lane_to_midi = {
-    0: 60,
-    1: 62,
-    2: 64,
-    3: 65,
-    4: 67,
-    5: 69,
-    6: 71,
-    7: 72
-}
 
 # creates the Audio driver
 # creates a song and loads it with solo and bg audio tracks
