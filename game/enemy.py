@@ -65,17 +65,38 @@ class Enemy(InstructionGroup):
         pos = self.get_enemy_pos_from_lane(idx)
 
         self.type = enemy_type
-        self.rect = Rectangle(pos = pos, size = (2*self.r, 2*self.r), texture=Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture)
-        if(self.type == "leader"):
-            self.rect.size = (3*self.r,3*self.r)
+        ratio = 1.3
+        self.inverstion_start = 1
+
+        self.inversion_range = ["1","3","5"]
+        self.rect = Rectangle(pos = pos, size = (self.r*1.5, self.r*1.5), texture=Image("assets/" + self.type + "_" + self.state + str(self.frame) + ".png").texture)
+        self.add(self.rect)
+        if(self.type == "case"):
+            self.rect.pos = (self.rect.pos[0],self.rect.pos[1]/0.98)
+            self.rect.size = (2*self.r,3*self.r)
+            self.enemy_bottom = Rectangle(pos = pos, size = (self.r/ratio, self.r/ratio/1.3), texture=Image("assets/enemy_" + self.inversion_range[self.inverstion_start%len(self.inversion_range)] + "_highlight.png").texture)
+            self.enemy_middle = Rectangle(pos = pos, size = (self.r/ratio, self.r/ratio/1.3), texture=Image("assets/enemy_" + self.inversion_range[(self.inverstion_start+1)%len(self.inversion_range)] + "_normal.png").texture)
+            self.enemy_top = Rectangle(pos = pos, size = (self.r/ratio, self.r/ratio/1.3), texture=Image("assets/enemy_" + self.inversion_range[(self.inverstion_start+2)%len(self.inversion_range)] + "_normal.png").texture)
+            self.add(self.enemy_top)
+            self.add(self.enemy_middle)
+            self.add(self.enemy_bottom)
+            self.enemies = [self.enemy_bottom,self.enemy_middle,self.enemy_top]
+        elif(self.type == "blue"):
+            self.rect.pos = (self.rect.pos[0],self.rect.pos[1] + self.r/1.1)
+
+
+
         self.size_anim = None
         self.color_anim = None
 
-        self.add(self.rect)
+
         self.speed = 4
         self.time = 0
         self.delay = delay
         self.started = False
+
+    def kill_enemy(self,idx):
+        self.enemies[idx].texture = Image("assets/enemy_" + self.inversion_range[self.inverstion_start%len(self.inversion_range)] + "_splat.png").texture
 
     def get_enemy_pos_from_lane(self,idx):
         return (Window.width, idx * Window.height/8)
@@ -101,6 +122,10 @@ class Enemy(InstructionGroup):
                 self.time = 0
 
             self.rect.pos = (cur_pos[0] - self.speed, cur_pos[1])
+            if(self.type == "case"):
+                self.enemy_bottom.pos = (cur_pos[0] + self.r/1.7, cur_pos[1]+self.r/1.2)
+                self.enemy_middle.pos = (cur_pos[0] +self.r/1.7, cur_pos[1]+self.r/0.75)
+                self.enemy_top.pos = (cur_pos[0] +self.r/1.7, cur_pos[1]+self.r/0.55)
             if(self.size_anim is not None):
                 size = self.size_anim.eval(self.time)
                 color = self.color_anim.eval(self.time)
