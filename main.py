@@ -45,7 +45,7 @@ def hp_label() :
 
 def score_label() :
     l = Label(text = "Score: 0", halign = 'left',valign='top', font_size='20sp',
-              pos=(Window.width/2, Window.height * 0.43),
+              pos=(Window.width/1.8, Window.height * 0.43),
               text_size=(Window.width, Window.height))
     return l
 
@@ -91,11 +91,18 @@ class MainWidget(BaseWidget) :
         self.canvas.add(rect)
         self.lane_manager = LaneManager()
         #self.canvas.add(self.lane_manager)
-
+        
         # Display the status of the game through the text labels
-        self.canvas.add(Color(0,0,0))
+
+        self.canvas.add(Color(1,1,1))
+        self.hud = Rectangle(pos=(0,Window.height/1.12), size=(Window.width/4, Window.height/9), texture=Image('assets/tophub.png').texture)
+        self.canvas.add(self.hud)
         #rect = Rectangle(pos=(0,Window.height-Window.height/10), size=(Window.width, Window.height/10))
         #self.canvas.add(rect)
+        self.canvas.add(Color(1,1,1))
+        self.hud_score = Rectangle(pos=(Window.width/1.26,Window.height/1.12), size=(Window.width/5, Window.height/9), texture=Image('assets/topscore.png').texture)
+        self.canvas.add(self.hud_score)
+        
         self.score_label = score_label()
         self.add_widget(self.score_label)
         self.hp_label = hp_label()
@@ -126,9 +133,12 @@ class MainWidget(BaseWidget) :
         self.enemy_manager = EnemyManager()
         self.canvas.add(self.enemy_manager)
         # self.enemy_manager.spawn_enemy(5,"case",0)
+        # self.enemy_manager.spawn_enemy(5,"red",15)
+        # self.enemy_manager.spawn_enemy(4,"red",15)
         # self.enemy_manager.spawn_enemy(3,"case",10)
         # self.enemy_manager.spawn_enemy(2,"blue",0)
 
+        
     def generate_note(self, note):
         self.audio_controller.generate_note(note)
 
