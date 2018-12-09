@@ -123,7 +123,8 @@ class Player(InstructionGroup):
                 # this means an enemy has more than 0 HP and is past the now bar by 0.4 seconds
                 if (not current_enemy.hp <= 0):
                     self.hp -= 10
-
+                    self.hero.change_state("hurt")
+                    current_enemy.kill_subenemies([0,1]) # explode the enemy on a pass
                     if (self.hp == 0):
                         print("GAME OVER")
 

@@ -20,7 +20,7 @@ def read_data(left_path, right_path, enemy_times, enemy_lanes, enemy_types):
 
     intermediate_data = []
 
-    for minion, lines in [('leader', left_lines), ('minion1', right_lines)]:
+    for minion, lines in [('case', left_lines), ('blue', right_lines)]:
     # for minion, lines in [('leader', left_lines)]:
     # for minion, lines in [('minion1', right_lines)]:
         print(lines)
