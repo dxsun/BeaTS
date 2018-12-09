@@ -125,6 +125,9 @@ class MainWidget(BaseWidget) :
 
         self.enemy_manager = EnemyManager()
         self.canvas.add(self.enemy_manager)
+        # self.enemy_manager.spawn_enemy(5,"case",0)
+        # self.enemy_manager.spawn_enemy(3,"case",10)
+        # self.enemy_manager.spawn_enemy(2,"blue",0)
 
     def generate_note(self, note):
         self.audio_controller.generate_note(note)
