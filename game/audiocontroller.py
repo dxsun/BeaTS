@@ -38,12 +38,6 @@ class AudioController(object):
     # start / stop the song
     def toggle(self):
         self.bg_wave_file_gen.play_toggle()
-    # # mute / unmute the solo track
-    # def set_mute(self, mute):
-    #     if (mute):
-    #         self.solo_wave_file_gen.set_gain(0)
-    #     else:
-    #         self.solo_wave_file_gen.set_gain(1)
 
     # play a sound-fx (miss sound)
     # def play_sfx(self):
