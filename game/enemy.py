@@ -31,7 +31,8 @@ class EnemyManager(InstructionGroup):
                 return
 
     def kill_enemy_at_index(self, idx):
-        self.enemies[idx].on_damage(100)
+        if idx < len(self.enemies):
+            self.enemies[idx].on_damage(100)
         return
 
     def kill_lane(self,idx):
