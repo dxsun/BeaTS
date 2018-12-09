@@ -27,7 +27,13 @@ class AudioController(object):
         self.channel = 1
         self.synth.program(self.channel, 0, 0)
 
-        self.bg_wave_file_gen = WaveGenerator(WaveFile("data/WhenIWasYourMan.wav"))
+        self.song = 'hallelujah'
+        
+        if self.song == 'WIWYM':
+            self.bg_wave_file_gen = WaveGenerator(WaveFile("data/WhenIWasYourMan.wav"))
+        elif self.song == 'hallelujah':
+            self.bg_wave_file_gen = WaveGenerator(WaveFile("data/hallelujah_harp.wav"))
+
         self.bg_wave_file_gen.set_gain(0.5)
         self.mixer.add(self.bg_wave_file_gen)
 

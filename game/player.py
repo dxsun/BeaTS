@@ -26,7 +26,7 @@ SPAWN_TIME = 2.5
 class Player(InstructionGroup):
     def __init__(self, score_label, hp_label, gem_times, gem_lanes, enemy_types, enemy_manager):
         super(Player, self).__init__()
-        self.MAX_HEALTH = 100
+        self.MAX_HEALTH = 100000
         self.score = 0
         self.hp = self.MAX_HEALTH
         self.state = "idle"
