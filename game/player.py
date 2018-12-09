@@ -15,7 +15,10 @@ from kivy.graphics import PushMatrix, PopMatrix, Translate, Scale, Rotate
 from kivy.clock import Clock as kivyClock
 
 from game.hero import Hero
+from game.enemy import Enemy
 from utils.mappings import chord_dict, chord_to_lane, lane_to_chord, lane_to_midi
+
+HERO_UPDATE_TIME = 0.1
 
 # Handles game logic and keeps score.
 # Controls the display
@@ -106,7 +109,7 @@ class Player(InstructionGroup):
         self.hp_label.text = "HP: " + str(self.hp)
 
         if (self.playing):
-            self.hero.on_update(0.1)
+            self.hero.on_update(HERO_UPDATE_TIME)
             self.elapsed_time += time.time() - self.prev_time
 
             # THIS PART HANDLES ENEMIES AT THE NOW BAR

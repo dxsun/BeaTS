@@ -71,7 +71,7 @@ class Enemy(InstructionGroup):
         self.color_anim = None
 
         self.add(self.rect)
-        self.speed = 4
+        self.speed = Window.width/50
         self.time = 0
         self.delay = delay
         self.started = False
@@ -99,7 +99,7 @@ class Enemy(InstructionGroup):
                         self.state = "idle"
                 self.time = 0
 
-            self.rect.pos = (cur_pos[0] - self.speed, cur_pos[1])
+            self.rect.pos = (cur_pos[0] - dt*self.speed, cur_pos[1])
             if(self.size_anim is not None):
                 size = self.size_anim.eval(self.time)
                 color = self.color_anim.eval(self.time)
