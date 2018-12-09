@@ -15,7 +15,7 @@ class AudioController(object):
     def __init__(self):
         super(AudioController, self).__init__()
 
-        self.MIDI_ENABLED = True
+        self.MIDI_ENABLED = False
 
         self.audio = Audio(2)
         self.synth = Synth("data/FluidR3_GM.sf2")
@@ -49,6 +49,10 @@ class AudioController(object):
     # def play_sfx(self):
     #     self.miss_note_gen = WaveGenerator(WaveFile("error.wav"))
     #     self.mixer.add(self.miss_note_gen)
+
+    def turn_off(self):
+        self.bg_wave_file_gen.pause()
+        self.mixer.set_gain(0)
 
     def generate_note(self, note):
         self.synth.noteon(self.channel, note, 100)

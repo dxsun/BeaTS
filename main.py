@@ -53,19 +53,36 @@ class MainWidget(BaseWidget) :
     def __init__(self):
         super(MainWidget, self).__init__()
 
+        self.state = "menu"
+
         self.audio_controller = AudioController()
         self.audio_controller.toggle()
-
-        self.notes_down = [] # an array that keeps track of all notes that are currently being played on midi keyboard
 
         self.objects = AnimGroup()
         self.canvas.add(self.objects)
 
-        # The particle effect
-        self.ps = ParticleSystem('particle/particle.pex')
-        self.ps.emitter_x = Window.width/10
-        self.ps.emitter_y = Window.height/5
-        self.add_widget(self.ps)
+        self.initialize_menu()
+
+    def initialize_menu(self):
+        self.canvas.clear()
+        self.state = "menu"
+        rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/menu.png').texture)
+        self.canvas.add(rect)
+
+    def initialize_dead(self):
+        self.canvas.clear()
+        self.state = "dead"
+        rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/dead.png').texture)
+        self.canvas.add(rect)
+        self.audio_controller.turn_off()
+
+    def initialize_game(self):
+        self.canvas.clear()
+        self.state = "game"
+        self.audio_controller = AudioController()
+        self.audio_controller.toggle()
+
+        self.notes_down = [] # an array that keeps track of all notes that are currently being played on midi keyboard
 
         # The display for the gems, now bar, and bar lines
         self.canvas.add(Color(1,1,1))
@@ -86,18 +103,12 @@ class MainWidget(BaseWidget) :
 
         self.enemy_manager = EnemyManager()
         self.canvas.add(self.enemy_manager)
-        # self.enemy_manager.spawn_enemy(5,"leader",0)
-        # self.enemy_manager.spawn_enemy(5,"minion1",15)
-        # self.enemy_manager.spawn_enemy(5,"minion2",30)
-        # self.enemy_manager.spawn_enemy(2,"minion3",8)
-        # self.enemy_manager.spawn_enemy(1,"minion4",12)
-        # self.enemy_manager.spawn_enemy(4,"minion5",18)
 
         self.enemy_times = []
         self.enemy_lanes = []
         self.enemy_types = []
 
-        read_data("song_annotations/WIWYM_left_hand.txt", 
+        read_data("song_annotations/WIWYM_left_hand.txt",
             "song_annotations/WIWYM_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
 
         self.prev_time = time.time()
@@ -120,64 +131,86 @@ class MainWidget(BaseWidget) :
 
     def on_key_down(self, keycode, modifiers):
         # play / pause toggle
-        if keycode[1] == 'p':
-            self.audio_controller.toggle()
-            self.player.toggle()
+        if self.state == "menu":
+            if keycode[1] == '3':
+                self.initialize_game()
 
-        else:
-            button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
-            if button_idx != None:
-                # self.audio_controller.generate_note(lane_to_midi[button_idx])
+        if self.state == "game":
+            if keycode[1] == 'p':
+                self.audio_controller.toggle()
+                self.player.toggle()
 
-                chord = chord_dict[lane_to_chord[button_idx]]
-                print("chord: ", chord)
+            else:
+                button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
+                if button_idx != None:
+                    # self.audio_controller.generate_note(lane_to_midi[button_idx])
 
-                self.notes_down.extend(chord)
-                for note in self.notes_down:
-                    self.audio_controller.generate_note(note)
+                    chord = chord_dict[lane_to_chord[button_idx]]
+                    print("chord: ", chord)
 
-                self.player.on_notes_played()
+                    self.notes_down.extend(chord)
+                    for note in self.notes_down:
+                        self.audio_controller.generate_note(note)
+
+                    self.player.on_notes_played()
+
+    def on_touch_down(self, touch):
+        p = touch.pos
+        self.x = p[0]
+        self.y = p[1]
+
+        if self.state == "menu":
+            if self.x > 138 and self.x < 475 and self.y > 300 and self.y < 550:
+                self.initialize_game()
+
+        if self.state == "dead":
+            if self.x > 630 and self.x < 975 and self.y > 350 and self.y < 600:
+                self.initialize_menu()
 
     def on_key_up(self, keycode):
-        button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
+        if self.state == "game":
+            button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
 
-        if button_idx != None:
+            if button_idx != None:
 
-            chord = chord_dict[lane_to_chord[button_idx]]
+                chord = chord_dict[lane_to_chord[button_idx]]
 
-            for note in chord:
-                self.audio_controller.note_off(note) # stop playing the note if the key is up
-                self.notes_down.remove(note)
+                for note in chord:
+                    self.audio_controller.note_off(note) # stop playing the note if the key is up
+                    self.notes_down.remove(note)
 
-            self.enemy_manager.kill_lane(button_idx)
-            self.player.change_lane(button_idx)
-            # self.audio_controller.note_off(60+button_idx)
-            self.audio_controller.note_off(lane_to_midi[button_idx])
+                self.enemy_manager.kill_lane(button_idx)
+                self.player.change_lane(button_idx)
+                # self.audio_controller.note_off(60+button_idx)
+                self.audio_controller.note_off(lane_to_midi[button_idx])
 
     def on_update(self) :
         self.audio_controller.on_update()
 
-        self.elapsed_time += time.time() - self.prev_time
-        self.prev_time = time.time()
+        if self.state == "game":
+            self.elapsed_time += time.time() - self.prev_time
+            self.prev_time = time.time()
 
-        if(self.audio_controller.MIDI_ENABLED is True):
-            message, delta_time = self.audio_controller.midi_in.get_message()
-            if (message):
-                if (message[0] == 144): # keydown message, add note to notes_down
-                    if (message[1] not in self.notes_down):
-                        self.notes_down.append(message[1])
-                        self.player.on_notes_played()
-                        self.audio_controller.generate_note(message[1])
-                else: #keyup, remove note from notes_down
-                    if (message[1] in self.notes_down):
-                        self.audio_controller.note_off(message[1]) # stop playing the note if the key is up
-                        self.notes_down.remove(message[1])
-            # self.notes_down contains the notes that are currently being played
+            if(self.audio_controller.MIDI_ENABLED is True):
+                message, delta_time = self.audio_controller.midi_in.get_message()
+                if (message):
+                    if (message[0] == 144): # keydown message, add note to notes_down
+                        if (message[1] not in self.notes_down):
+                            self.notes_down.append(message[1])
+                            self.player.on_notes_played()
+                            self.audio_controller.generate_note(message[1])
+                    else: #keyup, remove note from notes_down
+                        if (message[1] in self.notes_down):
+                            self.audio_controller.note_off(message[1]) # stop playing the note if the key is up
+                            self.notes_down.remove(message[1])
+                # self.notes_down contains the notes that are currently being played
 
-        self.lane_manager.on_update()
-        self.player.update_notes(self.notes_down)
-        self.player.on_update()
-        self.enemy_manager.on_update()
+            self.lane_manager.on_update()
+            self.player.update_notes(self.notes_down)
+            self.player.on_update()
+            self.enemy_manager.on_update()
 
+            if self.player.hp <= 0:
+                self.initialize_dead()
 
 run(MainWidget)
