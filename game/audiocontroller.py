@@ -12,10 +12,10 @@ from common.synth import *
 # creates a song and loads it with solo and bg audio tracks
 # creates snippets for audio sound fx
 class AudioController(object):
-    def __init__(self):
+    def __init__(self, difficulty):
         super(AudioController, self).__init__()
 
-        self.MIDI_ENABLED = True
+        self.MIDI_ENABLED = False
 
         self.audio = Audio(2)
         self.synth = Synth("data/FluidR3_GM.sf2")
@@ -29,10 +29,12 @@ class AudioController(object):
 
         self.song = 'hallelujah'
 
-        if self.song == 'WIWYM':
-            self.bg_wave_file_gen = WaveGenerator(WaveFile("data/WhenIWasYourMan.wav"))
-        elif self.song == 'hallelujah':
+        if difficulty == "easy":
             self.bg_wave_file_gen = WaveGenerator(WaveFile("data/hallelujah_harp.wav"))
+        elif difficulty == "medium":
+            self.bg_wave_file_gen = WaveGenerator(WaveFile("data/epiphany.wav"))
+        elif difficulty == "hard": #difficulty == "hard"
+            self.bg_wave_file_gen = WaveGenerator(WaveFile("data/WhenIWasYourMan.wav"))
 
         self.bg_wave_file_gen.set_gain(0.5)
         self.mixer.add(self.bg_wave_file_gen)

@@ -55,7 +55,7 @@ class MainWidget(BaseWidget) :
 
         self.state = "menu"
 
-        self.audio_controller = AudioController()
+        self.audio_controller = AudioController("easy")
         self.audio_controller.toggle()
 
         self.objects = AnimGroup()
@@ -76,10 +76,12 @@ class MainWidget(BaseWidget) :
         self.canvas.add(rect)
         self.audio_controller.turn_off()
 
-    def initialize_game(self):
+    def initialize_game(self, difficulty):
         self.canvas.clear()
         self.state = "game"
-        self.audio_controller = AudioController()
+        self.difficulty = difficulty
+
+        self.audio_controller = AudioController(self.difficulty)
         self.audio_controller.toggle()
 
         self.notes_down = [] # an array that keeps track of all notes that are currently being played on midi keyboard
@@ -91,7 +93,7 @@ class MainWidget(BaseWidget) :
         self.canvas.add(rect)
         self.lane_manager = LaneManager()
         #self.canvas.add(self.lane_manager)
-        
+
         # Display the status of the game through the text labels
 
         self.canvas.add(Color(1,1,1))
@@ -102,7 +104,7 @@ class MainWidget(BaseWidget) :
         self.canvas.add(Color(1,1,1))
         self.hud_score = Rectangle(pos=(Window.width/1.26,Window.height/1.12), size=(Window.width/5, Window.height/9), texture=Image('assets/topscore.png').texture)
         self.canvas.add(self.hud_score)
-        
+
         self.score_label = score_label()
         self.add_widget(self.score_label)
         self.hp_label = hp_label()
@@ -115,11 +117,15 @@ class MainWidget(BaseWidget) :
         self.enemy_manager = EnemyManager()
         self.canvas.add(self.enemy_manager)
 
-        # read_data("song_annotations/WIWYM_left_hand.txt",
-        #     "song_annotations/WIWYM_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
-
-        read_data("song_annotations/hallelujah_left_hand.txt",
-            "song_annotations/hallelujah_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
+        if difficulty == "easy":
+            read_data("song_annotations/hallelujah_left_hand.txt",
+                "song_annotations/hallelujah_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
+        elif difficulty == "medium":
+            read_data("song_annotations/epiphany_left_hand.txt",
+                "song_annotations/epiphany_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
+        elif difficulty == "hard":
+            read_data("song_annotations/WIWYM_left_hand.txt",
+                "song_annotations/WIWYM_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
 
         self.prev_time = time.time()
         self.elapsed_time = 0
@@ -133,7 +139,7 @@ class MainWidget(BaseWidget) :
         self.canvas.add(self.player)
         self.player.toggle()
 
-        
+
     def generate_note(self, note):
         self.audio_controller.generate_note(note)
 
@@ -168,8 +174,12 @@ class MainWidget(BaseWidget) :
         self.y = p[1]
 
         if self.state == "menu":
-            if self.x > 138 and self.x < 475 and self.y > 300 and self.y < 550:
-                self.initialize_game()
+            if self.x > 575 and self.x < 1020 and self.y > 750 and self.y < 900:
+                self.initialize_game("easy")
+            elif self.x > 575 and self.x < 1020 and self.y > 500 and self.y < 645:
+                self.initialize_game("medium")
+            elif self.x > 575 and self.x < 1020 and self.y > 210 and self.y < 360:
+                self.initialize_game("hard")
 
         if self.state == "dead":
             if self.x > 630 and self.x < 975 and self.y > 350 and self.y < 600:
