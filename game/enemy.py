@@ -93,7 +93,7 @@ class Enemy(InstructionGroup):
 
         self.size_anim = None
         self.color_anim = None
-        self.speed = 8
+        self.speed = 5
 
         self.angry_anim = None
 
