@@ -95,7 +95,13 @@ class MainWidget(BaseWidget) :
 
         # The display for the gems, now bar, and bar lines
         self.canvas.add(Color(1,1,1))
-        rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/bg_c.png').texture)
+
+        if difficulty == "easy":
+            rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/bg_c.png').texture)
+        elif difficulty == "medium":
+            rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/bg_f.png').texture)
+        elif difficulty == "hard":
+            rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/bg_a.png').texture)
 
         self.canvas.add(rect)
         self.lane_manager = LaneManager()
@@ -173,9 +179,6 @@ class MainWidget(BaseWidget) :
                         self.audio_controller.generate_note(note)
 
                     self.player.on_notes_played()
-
-        elif self.state == "victory":
-            self.initialize_menu()
 
     def on_touch_down(self, touch):
         p = touch.pos
