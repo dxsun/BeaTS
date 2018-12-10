@@ -76,6 +76,13 @@ class MainWidget(BaseWidget) :
         self.canvas.add(rect)
         self.audio_controller.turn_off()
 
+    def initialize_tutorial(self):
+        self.canvas.clear()
+        self.state = "tutorial"
+        rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/tutorial.png').texture)
+        self.canvas.add(rect)
+        self.audio_controller.turn_off()
+
     def initialize_victory(self):
         self.canvas.clear()
         self.state = "victory"
@@ -130,7 +137,7 @@ class MainWidget(BaseWidget) :
         if difficulty == "easy":
             read_data("song_annotations/hallelujah_left_hand_test.txt",
                 "song_annotations/hallelujah_right_hand_test.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
-            self.song_length = 1000
+            self.song_length = 100
         elif difficulty == "medium":
             read_data("song_annotations/epiphany_left_hand.txt",
                 "song_annotations/epiphany_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
@@ -170,8 +177,6 @@ class MainWidget(BaseWidget) :
             else:
                 button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
                 if button_idx != None:
-                    # self.audio_controller.generate_note(lane_to_midi[button_idx])
-
                     chord = chord_dict[lane_to_chord[button_idx]]
 
                     self.notes_down.extend(chord)
@@ -185,6 +190,8 @@ class MainWidget(BaseWidget) :
         self.x = p[0]
         self.y = p[1]
 
+        print(self.x)
+
         if self.state == "menu":
             if self.x > 575 and self.x < 1020 and self.y > 750 and self.y < 900:
                 self.initialize_game("easy")
@@ -192,12 +199,17 @@ class MainWidget(BaseWidget) :
                 self.initialize_game("medium")
             elif self.x > 575 and self.x < 1020 and self.y > 210 and self.y < 360:
                 self.initialize_game("hard")
+            elif self.x > 1392 and self.x < 1552 and self.y > 32 and self.y < 185:
+                self.initialize_tutorial()
 
         elif self.state == "dead":
             if self.x > 550 and self.x < 1080 and self.y > 410 and self.y < 568:
                 self.initialize_menu()
 
         elif self.state == "victory":
+            self.initialize_menu()
+
+        elif self.state == "tutorial":
             self.initialize_menu()
 
     def on_key_up(self, keycode):
