@@ -158,13 +158,19 @@ class Enemy(InstructionGroup):
                 self.color.a = color
             if(self.explosion_anim is not None):
                 self.angry_anim = None
-                if(self.is_pass):
-                    self.explosion_anim.texture = Image("assets/explosion0" + str(int(self.explosion_idx/4)) +".png").texture
-                else:
-                    self.explosion_anim.texture = Image("assets/aura_test_1_32_" + str(int(self.explosion_idx*2)) +".png").texture
-                self.explosion_idx += 1
-                if(self.explosion_idx > 32):
+                
+                if(self.explosion_idx >= 32):
                     self.explosion_anim = None
+                else:
+                    self.explosion_idx += 1
+
+                    if(self.is_pass):
+                        self.explosion_anim.texture = Image("assets/explosion0" + str(int(self.explosion_idx/4)) +".png").texture
+                    else:
+                        print("idx:", str(int(self.explosion_idx)))
+                        self.explosion_anim.texture = Image("assets/aura_test_1_32_" + str(int(self.explosion_idx)) +".png").texture
+                
+                
         self.time += dt
 
     def on_damage(self, damage):
