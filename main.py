@@ -160,7 +160,6 @@ class MainWidget(BaseWidget) :
                     # self.audio_controller.generate_note(lane_to_midi[button_idx])
 
                     chord = chord_dict[lane_to_chord[button_idx]]
-                    print("chord: ", chord)
 
                     self.notes_down.extend(chord)
                     for note in self.notes_down:
@@ -182,7 +181,7 @@ class MainWidget(BaseWidget) :
                 self.initialize_game("hard")
 
         if self.state == "dead":
-            if self.x > 630 and self.x < 975 and self.y > 350 and self.y < 600:
+            if self.x > 550 and self.x < 1080 and self.y > 410 and self.y < 568:
                 self.initialize_menu()
 
     def on_key_up(self, keycode):

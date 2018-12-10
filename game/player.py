@@ -26,7 +26,7 @@ SPAWN_TIME = 2.5
 class Player(InstructionGroup):
     def __init__(self, score_label, hp_label, gem_times, gem_lanes, enemy_types, enemy_manager):
         super(Player, self).__init__()
-        self.MAX_HEALTH = 100000
+        self.MAX_HEALTH = 100
         self.score = 0
         self.hp = self.MAX_HEALTH
         self.state = "idle"
@@ -91,8 +91,7 @@ class Player(InstructionGroup):
 
             else: # This is a single note for the right hand, we need to see if it matches the correct lane
                 note_to_match = lane_to_midi[enemy_lane]
-                print("note to match:",note_to_match)
-                print("notes down:",self.notes_down)
+                
                 if (note_to_match in self.notes_down):
                     self.enemy_manager.kill_enemy_at_index(temp_gem_index)
                     time_difference = self.elapsed_time - self.gem_times[temp_gem_index]
