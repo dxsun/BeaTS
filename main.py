@@ -122,16 +122,16 @@ class MainWidget(BaseWidget) :
         self.canvas.add(self.enemy_manager)
 
         if difficulty == "easy":
-            read_data("song_annotations/hallelujah_left_hand.txt",
-                "song_annotations/hallelujah_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
-            self.song_length = 10
+            read_data("song_annotations/hallelujah_left_hand_test.txt",
+                "song_annotations/hallelujah_right_hand_test.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
+            self.song_length = 1000
         elif difficulty == "medium":
             read_data("song_annotations/epiphany_left_hand.txt",
                 "song_annotations/epiphany_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
             self.song_length = 15
         elif difficulty == "hard":
-            read_data("song_annotations/WIWYM_left_hand.txt",
-                "song_annotations/WIWYM_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
+            read_data("song_annotations/WIWYM_left_hand_test.txt",
+                "song_annotations/WIWYM_right_hand_test.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
             self.song_length = 20
 
         self.prev_time = time.time()
