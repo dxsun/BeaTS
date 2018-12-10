@@ -31,7 +31,7 @@ class EnemyManager(InstructionGroup):
                 return
 
     def kill_enemy_at_index(self, idx):
-        if(len(self.enemies) < idx):
+        if idx < len(self.enemies):
             self.enemies[idx].on_damage(100)
         return
 
@@ -89,14 +89,13 @@ class Enemy(InstructionGroup):
         elif(self.type == "red"):
             self.image_texture.size = (self.r*2, self.r*2)
             self.image_texture.pos = (self.image_texture.pos[0],self.image_texture.pos[1] + self.r/2.5)
-            
-            
+
         self.size_anim = None
         self.color_anim = None
         self.speed = 8
 
         self.angry_anim = None
-        
+
         self.explosion_idx = 0
         self.time = 0
         self.delay = delay
@@ -106,7 +105,7 @@ class Enemy(InstructionGroup):
     def kill_subenemies(self,enemies_kill):
         if(self.type == "case"):
             self.angry_anim = KFAnim((0,0.8),(.3,1), (0.8,0))
-            
+
             for i in range(len(self.enemies)):
                 self.make_subenemy_angry(i)
                 for idx in enemies_kill:
@@ -150,7 +149,7 @@ class Enemy(InstructionGroup):
 
                 self.color.a = color
                 self.image_texture.size = (size_x,size_y)
-                
+
                 if(self.size_anim.is_active(self.time) is False):
                     self.speed = 0
             if(self.angry_anim is not None):
