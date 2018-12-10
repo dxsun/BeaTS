@@ -108,15 +108,18 @@ class MainWidget(BaseWidget) :
         self.hp_label = hp_label()
         self.add_widget(self.hp_label)
 
-        self.enemy_manager = EnemyManager()
-        self.canvas.add(self.enemy_manager)
-
         self.enemy_times = []
         self.enemy_lanes = []
         self.enemy_types = []
 
-        read_data("song_annotations/WIWYM_left_hand.txt",
-            "song_annotations/WIWYM_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
+        self.enemy_manager = EnemyManager()
+        self.canvas.add(self.enemy_manager)
+
+        # read_data("song_annotations/WIWYM_left_hand.txt",
+        #     "song_annotations/WIWYM_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
+
+        read_data("song_annotations/hallelujah_left_hand.txt",
+            "song_annotations/hallelujah_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
 
         self.prev_time = time.time()
         self.elapsed_time = 0
@@ -129,14 +132,6 @@ class MainWidget(BaseWidget) :
         self.player = Player(self.hp_label,self.score_label, self.enemy_times, self.enemy_lanes, self.enemy_types, self.enemy_manager)
         self.canvas.add(self.player)
         self.player.toggle()
-
-        self.enemy_manager = EnemyManager()
-        self.canvas.add(self.enemy_manager)
-        # self.enemy_manager.spawn_enemy(5,"case",0)
-        # self.enemy_manager.spawn_enemy(5,"red",15)
-        # self.enemy_manager.spawn_enemy(4,"red",15)
-        # self.enemy_manager.spawn_enemy(3,"case",10)
-        # self.enemy_manager.spawn_enemy(2,"blue",0)
 
         
     def generate_note(self, note):

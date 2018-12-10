@@ -51,6 +51,7 @@ class EnemyManager(InstructionGroup):
         #     self.enemies.remove(dead_enemy)
 
 class Enemy(InstructionGroup):
+
     def __init__(self, idx, enemy_type,delay):
         super(Enemy, self).__init__()
         self.hp = 100
@@ -91,9 +92,10 @@ class Enemy(InstructionGroup):
 
         self.size_anim = None
         self.color_anim = None
+        self.speed = 8
+
         self.angry_anim = None
 
-        self.speed = 4
         self.explosion_idx = 0
         self.time = 0
         self.delay = delay

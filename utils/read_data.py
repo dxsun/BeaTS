@@ -5,7 +5,8 @@ WIWYM_maps = {
     'f':4,
     'g':5,
     'a':6, 
-    'b':7
+    'b':7,
+    'c8': 8
 }
 
 # Takes in the path for the left hand and the right hand, and adds
@@ -21,12 +22,16 @@ def read_data(left_path, right_path, enemy_times, enemy_lanes, enemy_types):
     intermediate_data = []
 
     for minion, lines in [('case', left_lines), ('blue', right_lines)]:
-    # for minion, lines in [('leader', left_lines)]:
+    # for minion, lines in [('case', left_lines)]:
     # for minion, lines in [('minion1', right_lines)]:
         print(lines)
         for line in lines:
             line = line.rstrip()
-            splitted = line.split('\t')
+            if '\t' in line:
+                splitted = line.split('\t')
+            elif ' ' in line:
+                splitted = line.split(' ')
+            print('splitted:', splitted)
             start_time_seconds = float(splitted[0])
             lane_number = WIWYM_maps[splitted[1]]
 
