@@ -62,6 +62,7 @@ class Enemy(InstructionGroup):
         self.r = Window.height/16
         self.color = Color(1,1,1)
         self.add(self.color)
+        self.is_dead = False
         segments = 40
         pos = self.get_enemy_pos_from_lane(idx)
 
@@ -137,8 +138,8 @@ class Enemy(InstructionGroup):
                     if(self.state == "attack"):
                         self.state = "idle"
                 self.time = 0
-
-            self.image_texture.pos = (cur_pos[0] - self.speed, cur_pos[1])
+            if(self.is_dead is False):
+                self.image_texture.pos = (cur_pos[0] - self.speed, cur_pos[1])
             if(self.type == "case"):
                 self.enemy_bottom.pos = (cur_pos[0] + self.r/1.7, cur_pos[1]+self.r/1.2)
                 self.enemy_middle.pos = (cur_pos[0] +self.r/1.7, cur_pos[1]+self.r/0.75)
@@ -157,13 +158,19 @@ class Enemy(InstructionGroup):
                 self.color.a = color
             if(self.explosion_anim is not None):
                 self.angry_anim = None
-                if(self.is_pass):
-                    self.explosion_anim.texture = Image("assets/explosion0" + str(int(self.explosion_idx/4)) +".png").texture
-                else:
-                    self.explosion_anim.texture = Image("assets/aura_test_1_32_" + str(int(self.explosion_idx*2)) +".png").texture
-                self.explosion_idx += 1
-                if(self.explosion_idx > 32):
+                
+                if(self.explosion_idx >= 32):
                     self.explosion_anim = None
+                else:
+                    self.explosion_idx += 1
+
+                    if(self.is_pass):
+                        self.explosion_anim.texture = Image("assets/explosion0" + str(int(self.explosion_idx/4)) +".png").texture
+                    else:
+                        print("idx:", str(int(self.explosion_idx)))
+                        self.explosion_anim.texture = Image("assets/aura_test_1_32_" + str(int(self.explosion_idx)) +".png").texture
+                
+                
         self.time += dt
 
     def on_damage(self, damage):
@@ -179,4 +186,5 @@ class Enemy(InstructionGroup):
         self.size_anim = KFAnim((0,self.image_texture.size[0],self.image_texture.size[1]),(0.9,self.image_texture.size[0],self.image_texture.size[1]))
         self.color_anim = KFAnim((0,0.8),(.3,1), (0.8,0))
         self.time = 0
+        self.is_dead = True
         # play death animation

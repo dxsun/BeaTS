@@ -81,7 +81,7 @@ class Player(InstructionGroup):
                 # change lanes bc you played a chord
                 self.change_lane(enemy_lane)
 
-            if (enemy_type == "leader"):
+            if (enemy_type == "case"):
                 # yay you hit all the notes in the chord, now we can kill the enemy!
                 # self.notes_down needs to contain the chord (LEFT HAND OCTAVE) in the correct lane
                 if (hit_all_notes):
@@ -89,7 +89,7 @@ class Player(InstructionGroup):
                     time_difference = self.elapsed_time - self.gem_times[temp_gem_index]
                     self.score += int(300 * (1-time_difference*2))
 
-            else: # This is a single note for the right hand, we need to see if it matches the correct lane
+            elif enemy_type == "blue": # This is a single note for the right hand, we need to see if it matches the correct lane
                 note_to_match = lane_to_midi[enemy_lane]
                 
                 if (note_to_match in self.notes_down):
@@ -123,7 +123,8 @@ class Player(InstructionGroup):
                 if (not current_enemy.hp <= 0):
                     self.hp -= 10
                     self.hero.change_state("hurt")
-                    current_enemy.kill_subenemies([0,1]) # explode the enemy on a pass
+                    # current_enemy.kill_subenemies([0,1]) # explode the enemy on a pass
+                    current_enemy.on_kill(True)
                     if (self.hp == 0):
                         print("GAME OVER")
 
