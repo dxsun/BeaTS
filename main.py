@@ -114,7 +114,7 @@ class MainWidget(BaseWidget) :
         self.hud = Rectangle(pos=(0,Window.height/1.12), size=(Window.width/4, Window.height/9), texture=Image('assets/tophub.png').texture)
         self.canvas.add(self.hud)
         self.canvas.add(Color(1,1,1))
-        self.hud_score = Rectangle(pos=(Window.width/1.26,Window.height/1.12), size=(Window.width/5, Window.height/9), texture=Image('assets/topscore.png').texture)
+        self.hud_score = Rectangle(pos=(Window.width/1.4,Window.height/1.12), size=(Window.width/3.5, Window.height/9), texture=Image('assets/topscore.png').texture)
         self.canvas.add(self.hud_score)
 
         self.score_label = score_label()
