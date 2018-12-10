@@ -19,14 +19,14 @@ from game.enemy import Enemy
 from utils.mappings import chord_dict, chord_to_lane, lane_to_chord, lane_to_midi
 
 HERO_UPDATE_TIME = 0.1
-SPAWN_TIME = 2.5
+SPAWN_TIME = 5
 
 # Handles game logic and keeps score.
 # Controls the display
 class Player(InstructionGroup):
     def __init__(self, score_label, hp_label, gem_times, gem_lanes, enemy_types, enemy_manager):
         super(Player, self).__init__()
-        self.MAX_HEALTH = 100
+        self.MAX_HEALTH = 1000
         self.score = 0
         self.hp = self.MAX_HEALTH
         self.state = "idle"
@@ -63,14 +63,14 @@ class Player(InstructionGroup):
 
         temp_gem_index = self.current_enemy_index
 
-        # iterates through all gems that are within 0.1 of the current chord
+        # iterates through all gems that are within 0.1 of the current time
         while(temp_gem_index != len(self.gem_times) and self.gem_times[temp_gem_index] <= self.elapsed_time + 0.4):
 
             enemy_lane = self.gem_lanes[temp_gem_index]
             enemy_type = self.enemy_types[temp_gem_index]
 
             desired_chord_name = lane_to_chord[enemy_lane]
-            chord_list = chord_dict[desired_chord_name]
+            chord_list = sorted(chord_dict[desired_chord_name])  # list of notes to hit for this chord
 
             hit_all_notes = True
             for note in chord_list:
@@ -84,14 +84,24 @@ class Player(InstructionGroup):
             if (enemy_type == "case"):
                 # yay you hit all the notes in the chord, now we can kill the enemy!
                 # self.notes_down needs to contain the chord (LEFT HAND OCTAVE) in the correct lane
-                if (hit_all_notes):
-                    self.enemy_manager.kill_enemy_at_index(temp_gem_index)
+
+                subnotes_hit = []
+
+                for index in range (3):
+                    note = chord_list[index]
+                    if note in self.notes_down:
+                        subnotes_hit.append(index)
+
+                self.enemy_manager.kill_subenemies_at_index(temp_gem_index, subnotes_hit)
+
+                if len(subnotes_hit) == 3:
+                    # You hit all the notes in the chord! ++ points
                     time_difference = self.elapsed_time - self.gem_times[temp_gem_index]
                     self.score += int(300 * (1-time_difference*2))
 
             elif enemy_type == "blue": # This is a single note for the right hand, we need to see if it matches the correct lane
                 note_to_match = lane_to_midi[enemy_lane]
-                
+
                 if (note_to_match in self.notes_down):
                     self.enemy_manager.kill_enemy_at_index(temp_gem_index)
                     time_difference = self.elapsed_time - self.gem_times[temp_gem_index]

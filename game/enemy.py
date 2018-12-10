@@ -35,6 +35,10 @@ class EnemyManager(InstructionGroup):
             self.enemies[idx].on_damage(100)
         return
 
+    def kill_subenemies_at_index(self, idx, array_of_subindexes):
+        if idx < len(self.enemies):
+            self.enemies[idx].kill_subenemies(array_of_subindexes)
+
     def kill_lane(self,idx):
         for enemy in self.enemies:
             if(enemy.lane == idx):
@@ -93,7 +97,7 @@ class Enemy(InstructionGroup):
 
         self.size_anim = None
         self.color_anim = None
-        self.speed = 8
+        self.speed = 4
 
         self.angry_anim = None
 
@@ -105,12 +109,16 @@ class Enemy(InstructionGroup):
 
     def kill_subenemies(self,enemies_kill):
         if(self.type == "case"):
-            self.angry_anim = KFAnim((0,0.8),(.3,1), (0.8,0))
 
-            for i in range(len(self.enemies)):
-                self.make_subenemy_angry(i)
-                for idx in enemies_kill:
-                    self.enemies[idx].texture = Image("assets/enemy_" + self.inversion_range[self.inverstion_start%len(self.inversion_range)] + "_empty.png").texture
+            if len(enemies_kill) == 3:
+                self.on_damage(100)
+            else:
+                self.angry_anim = KFAnim((0,0.8),(.3,1), (0.8,0))
+
+                for i in range(len(self.enemies)):
+                    self.make_subenemy_angry(i)
+                    for idx in enemies_kill:
+                        self.enemies[idx].texture = Image("assets/enemy_" + self.inversion_range[self.inverstion_start%len(self.inversion_range)] + "_empty.png").texture
 
     def make_subenemy_angry(self,idx):
         if(self.type == "case"):
@@ -158,7 +166,7 @@ class Enemy(InstructionGroup):
                 self.color.a = color
             if(self.explosion_anim is not None):
                 self.angry_anim = None
-                
+
                 if(self.explosion_idx >= 32):
                     self.explosion_anim = None
                 else:
@@ -167,10 +175,9 @@ class Enemy(InstructionGroup):
                     if(self.is_pass):
                         self.explosion_anim.texture = Image("assets/explosion0" + str(int(self.explosion_idx/4)) +".png").texture
                     else:
-                        print("idx:", str(int(self.explosion_idx)))
                         self.explosion_anim.texture = Image("assets/aura_test_1_32_" + str(int(self.explosion_idx)) +".png").texture
-                
-                
+
+
         self.time += dt
 
     def on_damage(self, damage):

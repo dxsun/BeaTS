@@ -130,7 +130,7 @@ class MainWidget(BaseWidget) :
         if difficulty == "easy":
             read_data("song_annotations/hallelujah_left_hand.txt",
                 "song_annotations/hallelujah_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
-            self.song_length = 10
+            self.song_length = 100
         elif difficulty == "medium":
             read_data("song_annotations/epiphany_left_hand.txt",
                 "song_annotations/epiphany_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
@@ -170,8 +170,6 @@ class MainWidget(BaseWidget) :
             else:
                 button_idx = lookup(keycode[1], '12345678', (0,1,2,3,4,5,6,7))
                 if button_idx != None:
-                    # self.audio_controller.generate_note(lane_to_midi[button_idx])
-
                     chord = chord_dict[lane_to_chord[button_idx]]
 
                     self.notes_down.extend(chord)
