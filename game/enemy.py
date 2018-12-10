@@ -56,7 +56,7 @@ class EnemyManager(InstructionGroup):
 
 class Enemy(InstructionGroup):
 
-    def __init__(self, idx, enemy_type,delay):
+    def __init__(self, idx, enemy_type,delay,inverstion_start = 1):
         super(Enemy, self).__init__()
         self.hp = 100
         self.state = "idle"
@@ -72,7 +72,7 @@ class Enemy(InstructionGroup):
 
         self.type = enemy_type
         ratio = 1.3
-        self.inverstion_start = 1
+        self.inverstion_start = inverstion_start
 
         self.explosion_anim = None
 
