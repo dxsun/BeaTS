@@ -116,7 +116,7 @@ class Enemy(InstructionGroup):
             self.enemies[idx].texture = Image("assets/enemy_" + self.inversion_range[self.inverstion_start%len(self.inversion_range)] + "_angry.png").texture
 
     def get_enemy_pos_from_lane(self,idx):
-        return (Window.width, idx * Window.height/8)
+        return (Window.width, idx * Window.height/8 - Window.height/17)
 
     def change_state(self,state):
         self.state = state
