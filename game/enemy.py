@@ -86,7 +86,7 @@ class Enemy(InstructionGroup):
             self.add(self.enemy_bottom)
             self.enemies = [self.enemy_bottom,self.enemy_middle,self.enemy_top]
         elif(self.type == "blue"):
-            self.image_texture.pos = (self.image_texture.pos[0],self.image_texture.pos[1] + self.r/1.1)
+            self.image_texture.pos = (self.image_texture.pos[0],self.image_texture.pos[1] + self.r/1.5)
         elif(self.type == "red"):
             self.image_texture.size = (self.r*2, self.r*2)
             self.image_texture.pos = (self.image_texture.pos[0],self.image_texture.pos[1] + self.r/2.5)
@@ -117,7 +117,7 @@ class Enemy(InstructionGroup):
             self.enemies[idx].texture = Image("assets/enemy_" + self.inversion_range[self.inverstion_start%len(self.inversion_range)] + "_angry.png").texture
 
     def get_enemy_pos_from_lane(self,idx):
-        return (Window.width, idx * Window.height/8 - Window.height/17)
+        return (Window.width, idx * Window.height/8.5)
 
     def change_state(self,state):
         self.state = state
