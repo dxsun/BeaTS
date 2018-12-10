@@ -1,16 +1,16 @@
 WIWYM_maps = {
     'c':1,
-    'd':2, 
+    'd':2,
     'e':3,
     'f':4,
     'g':5,
-    'a':6, 
+    'a':6,
     'b':7,
     'c8': 8
 }
 
 # Takes in the path for the left hand and the right hand, and adds
-# the corresponding enemies by sorting them 
+# the corresponding enemies by sorting them
 def read_data(left_path, right_path, enemy_times, enemy_lanes, enemy_types):
     # minion = 'leader' if hand == 'left' else 'minion1'
     left_file = open(left_path)
@@ -24,17 +24,14 @@ def read_data(left_path, right_path, enemy_times, enemy_lanes, enemy_types):
     for minion, lines in [('case', left_lines), ('blue', right_lines)]:
     # for minion, lines in [('case', left_lines)]:
     # for minion, lines in [('minion1', right_lines)]:
-        print(lines)
         for line in lines:
             line = line.rstrip()
             if '\t' in line:
                 splitted = line.split('\t')
             elif ' ' in line:
                 splitted = line.split(' ')
-            print('splitted:', splitted)
             start_time_seconds = float(splitted[0])
             lane_number = WIWYM_maps[splitted[1]]
-
 
             intermediate_data.append((float(splitted[0]), WIWYM_maps[splitted[1]] - 1, minion) )
             # enemy_times.append(start_time_seconds)
@@ -53,8 +50,6 @@ def read_data(left_path, right_path, enemy_times, enemy_lanes, enemy_types):
     left_file.close()
     right_file.close()
 
-
-
 # def read_data(hand, filepath, enemy_times, enemy_lanes, enemy_types):
 #     minion = 'leader' if hand == 'left' else 'minion1'
 #     file = open(filepath)
@@ -71,7 +66,6 @@ def read_data(left_path, right_path, enemy_times, enemy_lanes, enemy_types):
 #         # c = 1, d = 2, etc.
 #         enemy_lanes.append(lane_number - 1)
 #         enemy_types.append(minion)
-
 
     # file = open(filepath)
     # lines = file.readlines()
