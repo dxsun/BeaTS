@@ -28,7 +28,7 @@ class AudioController(object):
         self.synth.program(self.channel, 0, 0)
 
         self.song = 'hallelujah'
-        
+
         if self.song == 'WIWYM':
             self.bg_wave_file_gen = WaveGenerator(WaveFile("data/WhenIWasYourMan.wav"))
         elif self.song == 'hallelujah':

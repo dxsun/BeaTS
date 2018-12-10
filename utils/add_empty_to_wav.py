@@ -1,4 +1,5 @@
-
+import sys
+sys.path.append('..')
 
 # Takes all the times and adds the empty space that was added to the
 # wave file
