@@ -19,7 +19,7 @@ from game.enemy import Enemy
 from utils.mappings import chord_dict, chord_to_lane, lane_to_chord, lane_to_midi
 
 HERO_UPDATE_TIME = 0.1
-SPAWN_TIME = 5
+SPAWN_TIME = 20/5
 
 # Handles game logic and keeps score.
 # Controls the display
