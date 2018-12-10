@@ -26,7 +26,7 @@ SPAWN_TIME = 2.5
 class Player(InstructionGroup):
     def __init__(self, score_label, hp_label, gem_times, gem_lanes, enemy_types, enemy_manager):
         super(Player, self).__init__()
-        self.MAX_HEALTH = 100
+        self.MAX_HEALTH = 10000
         self.score = 0
         self.hp = self.MAX_HEALTH
         self.state = "idle"
@@ -71,6 +71,9 @@ class Player(InstructionGroup):
 
             desired_chord_name = lane_to_chord[enemy_lane]
             chord_list = chord_dict[desired_chord_name]
+
+            # to determine if there is left and right hand at same time, you can just
+            # separate into left hand and right hand arrays
 
             hit_all_notes = True
             for note in chord_list:
