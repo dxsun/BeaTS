@@ -24,7 +24,7 @@ SPAWN_TIME = 20/5
 # Handles game logic and keeps score.
 # Controls the display
 class Player(InstructionGroup):
-    def __init__(self, score_label, hp_label, gem_times, gem_lanes, enemy_types, enemy_manager, audio_controller):
+    def __init__(self, score_label, hp_label, gem_times, gem_lanes, enemy_types, enemy_chords, enemy_manager, audio_controller):
         super(Player, self).__init__()
         self.audio_controller = audio_controller
         self.MAX_HEALTH = 1000
@@ -43,6 +43,7 @@ class Player(InstructionGroup):
         self.gem_times = gem_times
         self.gem_lanes = gem_lanes
         self.enemy_types = enemy_types
+        self.enemy_chords = enemy_chords
 
         self.elapsed_time = 0
         self.prev_time = time.time()
@@ -69,9 +70,16 @@ class Player(InstructionGroup):
 
             enemy_lane = self.gem_lanes[temp_gem_index]
             enemy_type = self.enemy_types[temp_gem_index]
+            enemy_chord = self.enemy_chords[temp_gem_index]
 
-            desired_chord_name = lane_to_chord[enemy_lane]
-            chord_list = sorted(chord_dict[desired_chord_name])  # list of notes to hit for this chord
+            # print(enemy_chord.notes)
+            # desired_chord_name = lane_to_chord[enemy_lane]
+            # chord_list = sorted(chord_dict[desired_chord_name])  # list of notes to hit for this chord
+
+            chord_list = enemy_chord.notes
+
+            print("chord_list: ",chord_list)
+            print("current notes: ",self.notes_down)
 
             # to determine if there is left and right hand at same time, you can just
             # separate into left hand and right hand arrays
@@ -148,8 +156,11 @@ class Player(InstructionGroup):
             if (self.enemy_spawn_index < len(self.gem_times)):
                 next_enemy = self.gem_times[self.enemy_spawn_index]
                 next_lane = self.gem_lanes[self.enemy_spawn_index]
+                next_type = self.enemy_types[self.enemy_spawn_index]
+                next_chord = self.enemy_chords[self.enemy_spawn_index]
                 if self.elapsed_time > (next_enemy - SPAWN_TIME):
-                    self.enemy_manager.spawn_enemy(next_lane,self.enemy_types[self.enemy_spawn_index],0)
+                    print('next inversion:', next_chord.inversion)
+                    self.enemy_manager.spawn_enemy(next_lane, next_type, 0, next_chord.inversion)
                     self.enemy_spawn_index += 1
             # self.enemy_manager.on_update()
         self.prev_time = time.time()

@@ -19,8 +19,8 @@ class EnemyManager(InstructionGroup):
         super(EnemyManager, self).__init__()
         self.enemies = []
 
-    def spawn_enemy(self,idx,enemy_type,delay):
-        enemy = Enemy(idx,enemy_type,delay)
+    def spawn_enemy(self,idx,enemy_type,delay, inversion=0):
+        enemy = Enemy(idx,enemy_type,delay, inversion)
         self.add(enemy)
         self.enemies.append(enemy)
 
@@ -56,7 +56,7 @@ class EnemyManager(InstructionGroup):
 
 class Enemy(InstructionGroup):
 
-    def __init__(self, idx, enemy_type,delay,inverstion_start = 1):
+    def __init__(self, idx, enemy_type,delay,inverstion_start = 0):
         super(Enemy, self).__init__()
         self.hp = 100
         self.state = "idle"

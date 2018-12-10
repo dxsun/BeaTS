@@ -103,12 +103,7 @@ class MainWidget(BaseWidget) :
         # The display for the gems, now bar, and bar lines
         self.canvas.add(Color(1,1,1))
 
-        if difficulty == "easy":
-            rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/bg_c.png').texture)
-        elif difficulty == "medium":
-            rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/bg_c.png').texture)
-        elif difficulty == "hard":
-            rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/bg_a.png').texture)
+        rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/bg_c.png').texture)
 
         self.canvas.add(rect)
         self.lane_manager = LaneManager()
@@ -130,22 +125,23 @@ class MainWidget(BaseWidget) :
         self.enemy_times = []
         self.enemy_lanes = []
         self.enemy_types = []
+        self.enemy_chords = []
 
         self.enemy_manager = EnemyManager()
         self.canvas.add(self.enemy_manager)
 
         if difficulty == "easy":
             read_data("song_annotations/hallelujah_left_hand_test.txt",
-                "song_annotations/hallelujah_right_hand_test.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
-            self.song_length = 100
+                None, self.enemy_times, self.enemy_lanes, self.enemy_types, self.enemy_chords)
+            self.song_length = 140
         elif difficulty == "medium":
-            read_data("song_annotations/epiphany_left_hand.txt",
-                "song_annotations/epiphany_right_hand.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
-            self.song_length = 15
+            read_data("song_annotations/hallelujah_left_hand_test.txt",
+                "song_annotations/hallelujah_right_hand_test.txt", self.enemy_times, self.enemy_lanes, self.enemy_types, self.enemy_chords)
+            self.song_length = 140
         elif difficulty == "hard":
-            read_data("song_annotations/WIWYM_left_hand_test.txt",
-                "song_annotations/WIWYM_right_hand_test.txt", self.enemy_times, self.enemy_lanes, self.enemy_types)
-            self.song_length = 20
+            read_data("song_annotations/falling_left_hand_test.txt",
+                "song_annotations/falling_right_hand_test.txt", self.enemy_times, self.enemy_lanes, self.enemy_types, self.enemy_chords, inversions=True)
+            self.song_length = 44
 
         self.prev_time = time.time()
         self.elapsed_time = 0
@@ -155,7 +151,7 @@ class MainWidget(BaseWidget) :
         x_scale = Window.width / window_size # pixels / sec
 
         # Create the player object which will store and control the state of the game
-        self.player = Player(self.hp_label,self.score_label, self.enemy_times, self.enemy_lanes, self.enemy_types, self.enemy_manager, self.audio_controller)
+        self.player = Player(self.hp_label,self.score_label, self.enemy_times, self.enemy_lanes, self.enemy_types, self.enemy_chords, self.enemy_manager, self.audio_controller)
         self.canvas.add(self.player)
         self.player.toggle()
 
