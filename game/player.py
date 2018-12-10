@@ -24,8 +24,9 @@ SPAWN_TIME = 5
 # Handles game logic and keeps score.
 # Controls the display
 class Player(InstructionGroup):
-    def __init__(self, score_label, hp_label, gem_times, gem_lanes, enemy_types, enemy_manager):
+    def __init__(self, score_label, hp_label, gem_times, gem_lanes, enemy_types, enemy_manager, audio_controller):
         super(Player, self).__init__()
+        self.audio_controller = audio_controller
         self.MAX_HEALTH = 1000
         self.score = 0
         self.hp = self.MAX_HEALTH
@@ -135,8 +136,8 @@ class Player(InstructionGroup):
                 # this means an enemy has more than 0 HP and is past the now bar by 0.4 seconds
                 if (not current_enemy.hp <= 0):
                     self.hp -= 10
+                    self.audio_controller.play_sfx()
                     self.hero.change_state("hurt")
-                    # current_enemy.kill_subenemies([0,1]) # explode the enemy on a pass
                     current_enemy.on_kill(True)
                     if (self.hp == 0):
                         print("GAME OVER")

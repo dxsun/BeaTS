@@ -32,7 +32,7 @@ class AudioController(object):
         if difficulty == "easy":
             self.bg_wave_file_gen = WaveGenerator(WaveFile("data/hallelujah_harp_delay.wav"))
         elif difficulty == "medium":
-            self.bg_wave_file_gen = WaveGenerator(WaveFile("data/epiphany.wav"))
+            self.bg_wave_file_gen = WaveGenerator(WaveFile("data/hallelujah_harp_delay.wav"))
         elif difficulty == "hard": #difficulty == "hard"
             self.bg_wave_file_gen = WaveGenerator(WaveFile("data/WhenIWasYourMan_delay.wav"))
 
@@ -48,9 +48,9 @@ class AudioController(object):
         self.bg_wave_file_gen.play_toggle()
 
     # play a sound-fx (miss sound)
-    # def play_sfx(self):
-    #     self.miss_note_gen = WaveGenerator(WaveFile("error.wav"))
-    #     self.mixer.add(self.miss_note_gen)
+    def play_sfx(self):
+        self.miss_note_gen = WaveGenerator(WaveFile("data/miss_sound.wav"))
+        self.mixer.add(self.miss_note_gen)
 
     def turn_off(self):
         self.bg_wave_file_gen.pause()

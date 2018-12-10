@@ -106,7 +106,7 @@ class MainWidget(BaseWidget) :
         if difficulty == "easy":
             rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/bg_c.png').texture)
         elif difficulty == "medium":
-            rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/bg_f.png').texture)
+            rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/bg_c.png').texture)
         elif difficulty == "hard":
             rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/bg_a.png').texture)
 
@@ -155,7 +155,7 @@ class MainWidget(BaseWidget) :
         x_scale = Window.width / window_size # pixels / sec
 
         # Create the player object which will store and control the state of the game
-        self.player = Player(self.hp_label,self.score_label, self.enemy_times, self.enemy_lanes, self.enemy_types, self.enemy_manager)
+        self.player = Player(self.hp_label,self.score_label, self.enemy_times, self.enemy_lanes, self.enemy_types, self.enemy_manager, self.audio_controller)
         self.canvas.add(self.player)
         self.player.toggle()
 
