@@ -72,6 +72,9 @@ class Player(InstructionGroup):
             desired_chord_name = lane_to_chord[enemy_lane]
             chord_list = sorted(chord_dict[desired_chord_name])  # list of notes to hit for this chord
 
+            # to determine if there is left and right hand at same time, you can just
+            # separate into left hand and right hand arrays
+
             hit_all_notes = True
             for note in chord_list:
                 if note not in self.notes_down:
