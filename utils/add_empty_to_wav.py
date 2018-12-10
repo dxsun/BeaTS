@@ -7,18 +7,25 @@ def add_empty_space(empty_delay, annotation_file):
 		lines = f.readlines()
 
 		for line in lines:
-			if '\t' in line:
-				time, note = line.split('\t')
-			elif ' ' in line:
-				time, note = line.split(' ')
-			new_lines.append(str(empty_delay + float(time)) + ' ' + note)
+			print(line)
+			if len(line.split(' ')) == 3:
+				time, note, inv = line.split(' ')
+				new_lines.append(str(empty_delay + float(time)) + ' ' + note + ' ' + inv)
+			else:
+				if '\t' in line:
+					time, note = line.split('\t')
+				elif ' ' in line:
+					time, note = line.split(' ')
+				new_lines.append(str(empty_delay + float(time)) + ' ' + note)
+
+			
 
 	with open(annotation_file[:-4] + "_test.txt", 'w') as f:
 		for line in new_lines:
 			f.write(line)
 
 
-file_left = '../song_annotations/WIWYM_left_hand.txt'
-file_right = '../song_annotations/WIWYM_right_hand.txt'
+file_left = '../song_annotations/falling_left_hand_test.txt'
+file_right = '../song_annotations/falling_right_hand_test.txt'
 add_empty_space(5, file_left)
 add_empty_space(5, file_right)

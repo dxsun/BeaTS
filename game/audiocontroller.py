@@ -32,9 +32,9 @@ class AudioController(object):
         if difficulty == "easy":
             self.bg_wave_file_gen = WaveGenerator(WaveFile("data/hallelujah_harp_delay.wav"))
         elif difficulty == "medium":
-            self.bg_wave_file_gen = WaveGenerator(WaveFile("data/epiphany.wav"))
+            self.bg_wave_file_gen = WaveGenerator(WaveFile("data/hallelujah_harp_delay.wav"))
         elif difficulty == "hard": #difficulty == "hard"
-            self.bg_wave_file_gen = WaveGenerator(WaveFile("data/WhenIWasYourMan_delay.wav"))
+            self.bg_wave_file_gen = WaveGenerator(WaveFile("data/falling_delay.wav"))
 
         self.bg_wave_file_gen.set_gain(0.5)
         self.mixer.add(self.bg_wave_file_gen)

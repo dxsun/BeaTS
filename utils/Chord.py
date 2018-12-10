@@ -35,6 +35,10 @@ class Chord():
 		"B": 71,
 	}	
 
+	semitone_mapping = {
+		k: v-12 for k,v in semitone_mapping.items()
+	}
+
 	# Maps the interval (e.g. the Major 3 interval) to the amount of half steps (semitones)
 	# requires to reach that interval from the root
 	interval_to_semitones = {
@@ -79,14 +83,19 @@ class Chord():
 		4 notes: "Dominant"
 	inversions - 0, 1, 2
 	"""
-	def __init__(self, root, chord, chord_type = "Major", inversion = 0):
+	def __init__(self, root, chord, chord_type = "Major", inversion = 0, song_key = "C"):
 		self.root = root
 		self.chord = chord
 		self.inversion = inversion
 
 		self.num_notes = len(chord)
 
-		root_note = semitone_mapping[root[0]]
+		# Hacky way of changing the correct chords to minor
+		if song_key == "C":
+			if root in ['D', 'E', 'A', 'B']:
+				chord_type = "Minor"
+
+		root_note = Chord.semitone_mapping[root[0]]
 
 		if '#' in root:
 			root_note += 1
@@ -94,9 +103,9 @@ class Chord():
 			root_note -= '1'
 
 		if '8' in root:
-			root_note += interval_to_semitones['8']
+			root_note += Chord.interval_to_semitones['8']
 
-		self.notes = [root_note + interval_to_semitones[value] for value in chord]
+		self.notes = [root_note + Chord.interval_to_semitones[value] for value in chord]
 
 		# Changes note values based on chord type
 		if len(chord) == 3:
@@ -115,6 +124,8 @@ class Chord():
 		self.notes = self.notes[inversion:] + [note + 12 for note in self.notes[:inversion]]
 
 
+x = Chord("C8", "135", inversion=1)
 
+print(x.notes)
 
 

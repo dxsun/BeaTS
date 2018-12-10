@@ -1,3 +1,5 @@
+from utils.Chord import Chord
+
 WIWYM_maps = {
     'c':1,
     'd':2,
@@ -9,15 +11,18 @@ WIWYM_maps = {
     'c8': 8
 }
 
+reverse_WIWYMY_map = {v:k for k,v in WIWYM_maps.items()}
+
 # Takes in the path for the left hand and the right hand, and adds
 # the corresponding enemies by sorting them
-def read_data(left_path, right_path, enemy_times, enemy_lanes, enemy_types):
+def read_data(left_path, right_path, enemy_times, enemy_lanes, enemy_types, enemies, inversions=False):
     # minion = 'leader' if hand == 'left' else 'minion1'
-    left_file = open(left_path)
-    right_file = open(right_path)
 
-    left_lines = left_file.readlines()
-    right_lines = right_file.readlines()
+    left_file = open(left_path) if left_path else None
+    right_file = open(right_path) if right_path else None
+
+    left_lines = left_file.readlines() if left_file else []
+    right_lines = right_file.readlines() if right_file else []
 
     intermediate_data = []
 
@@ -33,7 +38,11 @@ def read_data(left_path, right_path, enemy_times, enemy_lanes, enemy_types):
             start_time_seconds = float(splitted[0])
             lane_number = WIWYM_maps[splitted[1]]
 
-            intermediate_data.append((float(splitted[0]), WIWYM_maps[splitted[1]] - 1, minion) )
+            data = (float(splitted[0]), WIWYM_maps[splitted[1]] - 1, minion)
+            if inversions and len(splitted) > 2:
+                data += (int(splitted[2]),)
+
+            intermediate_data.append(data)
             # enemy_times.append(start_time_seconds)
             # # -1 for offset so when we annotate with
             # # c = 1, d = 2, etc.
@@ -42,13 +51,37 @@ def read_data(left_path, right_path, enemy_times, enemy_lanes, enemy_types):
 
     intermediate_data.sort(key= lambda x: x[0])
 
-    for time, lane, minion in intermediate_data:
-        enemy_times.append(time)
-        enemy_lanes.append(lane)
-        enemy_types.append(minion)
+    if inversions:
+        for i in range(len(intermediate_data)):
+            data = intermediate_data[i]
+            if len(data) == 3:
+                time, lane, minion = data
+                
+                enemy_times.append(time)
+                enemy_lanes.append(lane)
+                enemy_types.append(minion)
+                enemies.append(Chord(reverse_WIWYMY_map[lane + 1].upper(), "135"))
 
-    left_file.close()
-    right_file.close()
+            elif len(data) == 4:
+                time, lane, minion, inversion = data
+                
+                enemy_times.append(time)
+                enemy_lanes.append(lane)
+                enemy_types.append(minion)
+                enemies.append(Chord(reverse_WIWYMY_map[lane + 1].upper(), "135", inversion=inversion))
+
+                print("inversion:", inversion)
+    else:
+        for time, lane, minion in intermediate_data:
+            enemy_times.append(time)
+            enemy_lanes.append(lane)
+            enemy_types.append(minion)
+            enemies.append(Chord(reverse_WIWYMY_map[lane + 1].upper(), "135"))
+
+    if left_file:
+        left_file.close()
+    if right_file:
+        right_file.close()
 
 # def read_data(hand, filepath, enemy_times, enemy_lanes, enemy_types):
 #     minion = 'leader' if hand == 'left' else 'minion1'
