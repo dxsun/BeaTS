@@ -76,6 +76,13 @@ class MainWidget(BaseWidget) :
         self.canvas.add(rect)
         self.audio_controller.turn_off()
 
+    def initialize_tutorial(self):
+        self.canvas.clear()
+        self.state = "tutorial"
+        rect = Rectangle(pos=(0,0), size=(Window.width, Window.height), texture=Image('assets/tutorial.png').texture)
+        self.canvas.add(rect)
+        self.audio_controller.turn_off()
+
     def initialize_victory(self):
         self.canvas.clear()
         self.state = "victory"
@@ -183,6 +190,8 @@ class MainWidget(BaseWidget) :
         self.x = p[0]
         self.y = p[1]
 
+        print(self.x)
+
         if self.state == "menu":
             if self.x > 575 and self.x < 1020 and self.y > 750 and self.y < 900:
                 self.initialize_game("easy")
@@ -190,12 +199,17 @@ class MainWidget(BaseWidget) :
                 self.initialize_game("medium")
             elif self.x > 575 and self.x < 1020 and self.y > 210 and self.y < 360:
                 self.initialize_game("hard")
+            elif self.x > 1392 and self.x < 1552 and self.y > 32 and self.y < 185:
+                self.initialize_tutorial()
 
         elif self.state == "dead":
             if self.x > 550 and self.x < 1080 and self.y > 410 and self.y < 568:
                 self.initialize_menu()
 
         elif self.state == "victory":
+            self.initialize_menu()
+
+        elif self.state == "tutorial":
             self.initialize_menu()
 
     def on_key_up(self, keycode):
